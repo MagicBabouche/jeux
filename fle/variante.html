@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variante</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root {
+  --parchment: #ede5cf;
+  --paper:     #faf4e4;
+  --ink:       #241a0c;
+  --ink-mid:   #58482e;
+  --ink-dim:   #9a8660;
+  --ink-ghost: #c8a878;
+  --terra:     #b85030;
+  --sage:      #6c9e56;
+  --sage-dk:   #4c7838;
+  /* 5 slot colours */
+  --s1-bg:#e8c49a; --s1-tx:#3a2010;
+  --s2-bg:#9ec898; --s2-tx:#0e3818;
+  --s3-bg:#a8a0d0; --s3-tx:#1e1848;
+  --s4-bg:#dace7a; --s4-tx:#2e2600;
+  --s5-bg:#88c0d0; --s5-tx:#082838;
+}
+
+/* ════════════════════════════════════════
+   RESET
+════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; }
+
+body {
+  background: var(--parchment);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--ink);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "header" "main" "bottom";
+  position: relative;
+}
+
+/* Grain + vignette */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23n)' opacity='0.068'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(36,26,12,.11) 100%);
+  pointer-events: none; z-index: 800;
+}
+/* Outer frame */
+body::after {
+  content: '';
+  position: fixed; inset: 7px;
+  border: 1.5px solid rgba(184,80,48,.2);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 4px rgba(184,80,48,.05);
+  pointer-events: none; z-index: 801;
+}
+
+/* Corner ornaments */
+.orn { position:fixed; pointer-events:none; z-index:802; opacity:.2; width:46px; height:46px; }
+.orn.tl { top:9px;    left:9px; }
+.orn.tr { top:9px;    right:9px;  transform:scaleX(-1); }
+.orn.bl { bottom:9px; left:9px;   transform:scaleY(-1); }
+.orn.br { bottom:9px; right:9px;  transform:scale(-1); }
+
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
+.header {
+  grid-area: header;
+  text-align: center;
+  padding: 10px 60px 10px;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-mid);
+  font-size: .8em;
+  margin-right: .15em;
+}
+
+.orn-rule {
+  display:flex; align-items:center; gap:10px;
+  margin:4px auto 0; padding:0 80px;
+}
+.orn-line { flex:1; height:1px; background:linear-gradient(to right, transparent, rgba(184,80,48,.38), transparent); }
+.orn-c { font-family:'Playfair Display',serif; font-size:11px; color:var(--terra); opacity:.55; letter-spacing:.22em; }
+
+/* ════════════════════════════════════════
+   MAIN — phrase box top, then 5 row-slots
+════════════════════════════════════════ */
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 4px;
+  gap: 7px;
+  min-height: 0;
+}
+
+/* ── PHRASE BOX ── */
+.phrase-wrap {
+  flex: 0 0 auto;
+  position: relative;
+  margin: 10px 0 10px;
+}
+
+#phrase-input {
+  width: 100%;
+  background: var(--paper);
+  border-radius: 10px;
+  border: none;
+  box-shadow:
+    0 1px 4px rgba(36,26,12,.07),
+    0 6px 22px rgba(36,26,12,.08),
+    inset 0 0 0 1.5px rgba(184,80,48,.12),
+    inset 0 0 0 6px rgba(240,232,208,.7);
+  padding: 18px 28px;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 2.8vw, 34px);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  outline: none;
+  resize: none;
+  line-height: 1.35;
+  min-height: 70px;
+  transition: box-shadow .2s;
+  display: block;
+}
+#phrase-input::placeholder {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-ghost);
+}
+#phrase-input:focus {
+  box-shadow:
+    0 2px 8px rgba(36,26,12,.1),
+    0 10px 30px rgba(36,26,12,.1),
+    inset 0 0 0 1.5px rgba(184,80,48,.28),
+    inset 0 0 0 6px rgba(240,232,208,.7);
+}
+
+/* Inner border frame on phrase box */
+.phrase-wrap::after {
+  content: '';
+  position: absolute; inset: 11px;
+  border: 1px solid rgba(184,80,48,.1);
+  border-radius: 6px;
+  pointer-events: none; z-index: 2;
+}
+
+/* ── SLOTS GRID — 5 rows ── */
+.slots-grid {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+/* Each row: [toggle] [card] */
+.slot-row {
+  flex: 1 1 0;
+  display: flex;
+  align-items: stretch;
+  gap: 9px;
+  min-height: 0;
+}
+
+/* ON/OFF toggle pill */
+.stog {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 50px;
+  overflow: hidden;
+  border: 1.5px solid rgba(108,158,86,.38);
+  width: 42px;
+}
+.stbtn {
+  flex: 1;
+  padding: 0 6px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  border: none; cursor: pointer;
+  background: transparent; color: var(--ink-dim);
+  transition: all .18s;
+  display: flex; align-items: center; justify-content: center;
+}
+.stbtn.on.act  { background: var(--sage); color: #fff; }
+.stbtn.off.act { background: rgba(188,178,158,.5); color: var(--ink-mid); }
+
+/* THE SLOT CARD */
+.slot-card {
+  flex: 1;
+  border-radius: 10px;
+  background: rgba(190,180,158,.28);
+  border: 1px solid rgba(190,180,158,.32);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  cursor: pointer;
+  transition: background .38s ease, box-shadow .3s ease, opacity .25s, transform .15s;
+  min-height: 0;
+}
+.slot-card:hover:not(.disabled) {
+  transform: translateX(2px);
+}
+.slot-card.act {
+  box-shadow: 0 2px 18px rgba(36,26,12,.14);
+  border-color: rgba(255,255,255,.32);
+}
+.slot-card.disabled {
+  opacity: .28;
+  pointer-events: none;
+}
+/* Shine */
+.slot-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.2) 0%, transparent 44%);
+  pointer-events: none;
+}
+/* Inner frame */
+.slot-card::after {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 7px; pointer-events: none;
+}
+
+/* Lock icon */
+.slot-card.locked .lock-icon {
+  display: block;
+}
+.lock-icon {
+  display: none;
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(12px, 1.4vw, 18px);
+  opacity: .5;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* Rule text */
+.slot-rule {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(16px, 2.8vw, 36px);
+  font-weight: 700;
+  text-align: center;
+  padding: 0 44px;
+  line-height: 1.15;
+  text-shadow: 0 1px 2px rgba(36,26,12,.1);
+  z-index: 2; position: relative;
+}
+.slot-rule.anim { animation: ruleIn .4s cubic-bezier(.34,1.3,.64,1) both; }
+@keyframes ruleIn {
+  from { opacity:0; transform:translateY(8px) scale(.94); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.slot-empty {
+  font-style: italic;
+  font-size: clamp(11px, 1.1vw, 14px);
+  color: rgba(88,72,46,.28);
+  z-index: 2; position: relative;
+}
+
+/* ════════════════════════════════════════
+   BOTTOM — Variante button
+════════════════════════════════════════ */
+.bottom {
+  grid-area: bottom;
+  padding: 2px 20px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#btn-back {
+  position: fixed; bottom: 16px; left: 18px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: .67rem; font-style: italic; letter-spacing: .06em;
+  color: var(--faded-ink, #7a6a5a);
+  background: none; border: 1px solid rgba(61,50,40,.2);
+  border-radius: 3px; padding: .32rem .72rem;
+  cursor: pointer; opacity: .6;
+  transition: opacity .2s, background .2s;
+  text-decoration: none; display: inline-block;
+}
+#btn-back:hover { opacity: 1; background: rgba(232,220,200,.7); }
+
+.btn-variante {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 52px;
+  border-radius: 50px; border: none; cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(13px, 1.4vw, 17px); font-weight: 600;
+  letter-spacing: .06em;
+  background: var(--terra);
+  color: #fff;
+  box-shadow: 0 2px 14px rgba(184,80,48,.38);
+  transition: all .2s;
+  position: relative; overflow: hidden;
+  white-space: nowrap;
+}
+.btn-variante::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn-variante:hover { background: #9a3c1c; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(184,80,48,.45); }
+.btn-variante:active { transform: scale(.97); }
+
+svg.ico { width:13px; height:13px; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<!-- Corners -->
+<svg class="orn tl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn tr" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn bl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn br" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <h1><em>jeu de</em> Variante</h1>
+  <div class="orn-rule">
+    <div class="orn-line"></div>
+    <span class="orn-c">— ✦ règles aléatoires ✦ —</span>
+    <div class="orn-line"></div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- Phrase -->
+  <div class="phrase-wrap">
+    <textarea id="phrase-input" rows="1" placeholder="Écrivez votre phrase ici…" spellcheck="false"></textarea>
+  </div>
+
+  <!-- 5 slots -->
+  <div class="slots-grid" id="slotsGrid"></div>
+
+</div>
+
+<!-- ══ BOTTOM ══ -->
+<div class="bottom">
+  <a href="index.html" id="btn-back">← Retour aux jeux</a>
+  <button class="btn-variante" onclick="generateVariantes()">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+    Variante
+  </button>
+</div>
+
+<script>
+const RULES = [
+  "Pluriel / Singulier",
+  "Négatif / Positif",
+  "Ajoutez un lieu",
+  "Ajoutez un adjectif",
+  "Féminin / Masculin",
+  "Ajoutez une couleur",
+  "Ajoutez un nom",
+  "Ajoutez un animal",
+  "Ajoutez une action",
+  "Interrogation",
+  "Phrase au Passé",
+  "Phrase au Présent",
+  "Phrase au Futur",
+  "Changement de Pronom",
+  "Ajoutez une personne",
+  "Ajoutez un verbe"
+];
+
+const SLOT_BG = ['var(--s1-bg)','var(--s2-bg)','var(--s3-bg)','var(--s4-bg)','var(--s5-bg)'];
+const SLOT_TX = ['var(--s1-tx)','var(--s2-tx)','var(--s3-tx)','var(--s4-tx)','var(--s5-tx)'];
+
+let slotEnabled = [true, true, true, true, true];
+let slotLocked  = [false, false, false, false, false];
+let slotRules   = ['', '', '', '', ''];
+
+/* ── BUILD ── */
+function buildSlots() {
+  const grid = document.getElementById('slotsGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 5; i++) {
+    const row = document.createElement('div');
+    row.className = 'slot-row';
+    row.innerHTML = `
+      <div class="stog" id="tog-${i}">
+        <button class="stbtn on act"  id="son-${i}"  onclick="setSlot(${i},true)">ON</button>
+        <button class="stbtn off"     id="soff-${i}" onclick="setSlot(${i},false)">OFF</button>
+      </div>
+      <div class="slot-card act" id="slot-${i}" style="background:${SLOT_BG[i]}" onclick="toggleLock(${i})">
+        <span class="slot-empty">—</span>
+        <span class="lock-icon">🔒</span>
+      </div>`;
+    grid.appendChild(row);
+  }
+}
+
+/* ── ON / OFF ── */
+function setSlot(i, on) {
+  slotEnabled[i] = on;
+  document.getElementById(`son-${i}`).classList.toggle('act', on);
+  document.getElementById(`soff-${i}`).classList.toggle('act', !on);
+  const card = document.getElementById(`slot-${i}`);
+  if (on) {
+    card.classList.remove('disabled');
+    card.style.background = SLOT_BG[i];
+    card.classList.add('act');
+    renderSlot(i);
+  } else {
+    card.classList.add('disabled');
+    card.style.background = '';
+    card.classList.remove('act');
+    slotRules[i] = '';
+    slotLocked[i] = false;
+    renderSlot(i);
+  }
+}
+
+/* ── LOCK / UNLOCK ── */
+function toggleLock(i) {
+  if (!slotEnabled[i]) return;
+  slotLocked[i] = !slotLocked[i];
+  const card = document.getElementById(`slot-${i}`);
+  card.classList.toggle('locked', slotLocked[i]);
+}
+
+/* ── RENDER ONE SLOT ── */
+function renderSlot(i, animate) {
+  const card = document.getElementById(`slot-${i}`);
+  const rule = slotRules[i];
+  const lockHtml = `<span class="lock-icon">🔒</span>`;
+  if (rule) {
+    card.innerHTML = `<span class="slot-rule${animate ? ' anim' : ''}" style="color:${SLOT_TX[i]}">${rule}</span>${lockHtml}`;
+  } else {
+    card.innerHTML = `<span class="slot-empty">—</span>${lockHtml}`;
+  }
+  // Restore lock state
+  card.classList.toggle('locked', slotLocked[i]);
+}
+
+/* ── GENERATE ── */
+function generateVariantes() {
+  // Slots that are ON and NOT locked
+  const targets = [];
+  for (let i = 0; i < 5; i++) {
+    if (slotEnabled[i] && !slotLocked[i]) targets.push(i);
+  }
+  if (!targets.length) return;
+
+  // Pick unique rules (shuffle, then assign)
+  const shuffled = [...RULES].sort(() => Math.random() - 0.5);
+  targets.forEach((si, j) => {
+    slotRules[si] = shuffled[j % shuffled.length];
+    setTimeout(() => renderSlot(si, true), j * 60);
+  });
+}
+
+/* ── AUTO-RESIZE TEXTAREA ── */
+const ta = document.getElementById('phrase-input');
+ta.addEventListener('input', () => {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+});
+
+buildSlots();
+</script>
+</body>
+</html>

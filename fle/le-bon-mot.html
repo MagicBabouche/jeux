@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Bon Mot</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root {
+  --parchment: #ede5cf;
+  --paper:     #faf4e4;
+  --ink:       #241a0c;
+  --ink-mid:   #58482e;
+  --ink-dim:   #9a8660;
+  --ink-ghost: #c8a878;
+  --terra:     #b85030;
+  --sage:      #6c9e56;
+  --sage-dk:   #4c7838;
+  --blush:     #c88878;
+  --lav:       #9a90c8;
+  --lav-dk:    #6858a8;
+  --butter:    #c8b038;
+  --butter-dk: #8e7a18;
+  /* 5 thème slots */
+  --s1-bg:#e8c49a; --s1-tx:#3a2010;
+  --s2-bg:#9ec898; --s2-tx:#0e3818;
+  --s3-bg:#a8a0d0; --s3-tx:#1e1848;
+  --s4-bg:#dace7a; --s4-tx:#2e2600;
+  --s5-bg:#88c0d0; --s5-tx:#082838;
+  /* Contrainte slot — lavande */
+  --sc-bg:#c4b8e8; --sc-tx:#26184a;
+  /* Variante slot — rose poudré */
+  --sv-bg:#e0a8b8; --sv-tx:#3a0e1e;
+}
+
+/* ════════════════════════════════════════
+   RESET
+════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; }
+
+body {
+  background: var(--parchment);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--ink);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "header" "main" "bottom";
+  position: relative;
+}
+
+/* Grain + vignette */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23n)' opacity='0.068'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(36,26,12,.11) 100%);
+  pointer-events: none; z-index: 800;
+}
+/* Outer frame */
+body::after {
+  content: '';
+  position: fixed; inset: 7px;
+  border: 1.5px solid rgba(184,80,48,.2);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 4px rgba(184,80,48,.05);
+  pointer-events: none; z-index: 801;
+}
+
+/* Corner ornaments */
+.orn { position:fixed; pointer-events:none; z-index:802; opacity:.2; width:46px; height:46px; }
+.orn.tl { top:9px;    left:9px; }
+.orn.tr { top:9px;    right:9px;  transform:scaleX(-1); }
+.orn.bl { bottom:9px; left:9px;   transform:scaleY(-1); }
+.orn.br { bottom:9px; right:9px;  transform:scale(-1); }
+
+/* ════════════════════════════════════════
+   HEADER — breathing room below
+════════════════════════════════════════ */
+.header {
+  grid-area: header;
+  text-align: center;
+  padding: 10px 60px 18px; /* ← generous bottom gap */
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 4.8vw, 62px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.01em;
+  display: inline-flex; align-items: baseline; gap: .2em;
+}
+h1 .le  { font-style:italic; font-weight:400; color:var(--ink-mid); font-size:.8em; }
+h1 .bon { color:var(--terra); }
+h1 .mot { color:var(--ink); }
+
+.orn-rule {
+  display:flex; align-items:center; gap:10px;
+  margin:4px auto 0; padding:0 80px;
+}
+.orn-line { flex:1; height:1px; background:linear-gradient(to right, transparent, rgba(184,80,48,.38), transparent); }
+.orn-c { font-family:'Playfair Display',serif; font-size:11px; color:var(--terra); opacity:.55; letter-spacing:.22em; }
+
+/* ════════════════════════════════════════
+   MAIN — letter col | divider | slots col
+════════════════════════════════════════ */
+.main {
+  grid-area: main;
+  display: grid;
+  grid-template-columns: 20% 1px 1fr;
+  padding: 0 18px 4px;
+  min-height: 0;
+}
+
+/* ── LETTER COL ── */
+.col-letter {
+  display: flex;
+  flex-direction: column;
+  padding-right: 14px;
+  min-height: 0;
+}
+
+.letter-frame {
+  flex: 1;
+  background: var(--paper);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  box-shadow:
+    0 1px 4px rgba(36,26,12,.07),
+    0 8px 28px rgba(36,26,12,.08),
+    inset 0 0 0 1.5px rgba(184,80,48,.12),
+    inset 0 0 0 6px rgba(240,232,208,.7);
+}
+.letter-frame::before {
+  content: '';
+  position: absolute; inset: 11px;
+  border: 1px solid rgba(184,80,48,.12);
+  border-radius: 6px;
+  pointer-events: none; z-index: 2;
+}
+.letter-frame::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 22% 18%, rgba(255,248,220,.55) 0%, transparent 48%),
+    radial-gradient(ellipse at 80% 82%, rgba(184,80,48,.055) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+#bigLetter {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(80px, 12vw, 160px);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  opacity: 0;
+  position: relative; z-index: 3;
+  text-shadow: 3px 4px 0 rgba(36,26,12,.07);
+  user-select: none;
+}
+#bigLetter.pop {
+  animation: lPop .56s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes lPop {
+  0%   { opacity:0; transform:scale(.28) rotate(-18deg); filter:blur(8px); }
+  55%  { filter:blur(0); }
+  78%  { transform:scale(1.1) rotate(2.5deg); }
+  100% { opacity:1; transform:scale(1) rotate(0); }
+}
+
+#letterPh {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 5px;
+  font-style: italic; font-size: 12px;
+  color: var(--ink-ghost); text-align: center; padding: 20px;
+  line-height: 1.6;
+}
+#letterPh .ph-glyph {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(24px, 3.5vw, 44px);
+  color: rgba(184,80,48,.22);
+  line-height: 1; display: block; margin-bottom: 4px;
+}
+
+/* ── VERTICAL DIVIDER ── */
+.col-div {
+  background: linear-gradient(to bottom,
+    transparent 0%, rgba(184,80,48,.22) 15%,
+    rgba(184,80,48,.22) 85%, transparent 100%);
+  margin: 8px 0;
+  position: relative;
+}
+.col-div::before {
+  content: '✦';
+  position: absolute; top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  font-size: 8px; color: var(--terra); opacity: .45;
+  background: var(--parchment);
+  padding: 5px 0; line-height: 1;
+}
+
+/* ════════════════════════════════════════
+   SLOTS COLUMN — 7 uniform rows
+════════════════════════════════════════ */
+.col-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 0 0 16px;
+  min-height: 0;
+}
+
+/* Thin visual separator between group of 5 and special slots */
+.slot-sep-line {
+  flex-shrink: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(184,80,48,.22), transparent);
+  margin: 1px 4px;
+}
+
+/* Every row — identical height, flex:1 so they share space equally */
+.slot-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ON/OFF toggle */
+.stog {
+  flex-shrink: 0;
+  display: flex;
+  border-radius: 50px; overflow: hidden;
+  border: 1.5px solid rgba(108,158,86,.38);
+}
+.stbtn {
+  padding: 5px 12px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  border: none; cursor: pointer;
+  background: transparent; color: var(--ink-dim);
+  transition: all .18s;
+}
+.stbtn.on.act  { background: var(--sage); color: #fff; }
+.stbtn.off.act { background: rgba(188,178,158,.5); color: var(--ink-mid); }
+
+/* Special-slot toggles get their own accent */
+.stog.con-tog { border-color: rgba(104,88,168,.38); }
+.stog.con-tog .stbtn.on.act { background: var(--lav-dk); }
+.stog.var-tog { border-color: rgba(180,80,100,.38); }
+.stog.var-tog .stbtn.on.act { background: #b85070; }
+
+/* THE SLOT CARD — identical for all 7 */
+.slot-card {
+  flex: 1;
+  height: 100%;
+  border-radius: 8px;
+  background: rgba(190,180,158,.28);
+  border: 1px solid rgba(190,180,158,.32);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  transition: background .38s ease, box-shadow .3s ease;
+}
+.slot-card.act {
+  box-shadow: 0 2px 18px rgba(36,26,12,.14);
+  border-color: rgba(255,255,255,.32);
+}
+.slot-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.2) 0%, transparent 44%);
+  pointer-events: none;
+}
+.slot-card::after {
+  content: '';
+  position: absolute; inset: 3px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 5px; pointer-events: none;
+}
+
+/* Slot index number (themes) */
+.slot-n {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  font-family: 'Playfair Display', serif;
+  font-style: italic; font-size: 11px;
+  color: rgba(36,26,12,.2); user-select: none; z-index: 2;
+}
+
+/* Category label (Contrainte / Variante) */
+.slot-label {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: clamp(9px, .9vw, 11px); font-weight: 600;
+  color: rgba(36,26,12,.28); user-select: none; z-index: 2;
+  letter-spacing: .05em; white-space: nowrap;
+}
+
+/* Theme text */
+.slot-theme {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(15px, 2.3vw, 28px);
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 24px;
+  text-shadow: 0 1px 2px rgba(36,26,12,.1);
+  z-index: 2; position: relative;
+}
+.slot-theme.anim { animation: themeIn .4s cubic-bezier(.34,1.3,.64,1) both; }
+
+/* Special slot content text (Contrainte / Variante result) */
+.slot-special-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(13px, 1.9vw, 24px);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 90px 0 88px;
+  text-shadow: 0 1px 2px rgba(36,26,12,.1);
+  z-index: 2; position: relative;
+}
+.slot-special-text.anim { animation: themeIn .4s cubic-bezier(.34,1.3,.64,1) both; }
+
+@keyframes themeIn {
+  from { opacity:0; transform:translateY(7px) scale(.93); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.slot-empty {
+  font-style: italic; font-size: 12px;
+  color: rgba(88,72,46,.22);
+  z-index: 2; position: relative;
+}
+
+/* "Tirer" button inside special slots */
+.btn-in-slot {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 13px;
+  border-radius: 50px; border: none; cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(9px, .95vw, 12px); font-weight: 600;
+  letter-spacing: .04em;
+  background: rgba(255,255,255,.35); color: var(--ink-mid);
+  transition: all .2s;
+  z-index: 4; white-space: nowrap;
+}
+.btn-in-slot:hover { background: rgba(255,255,255,.6); }
+.btn-in-slot:active { transform: translateY(-50%) scale(.95); }
+/* Inactive state (slot off) */
+.btn-in-slot.dim {
+  background: rgba(36,26,12,.08); color: var(--ink-dim);
+}
+.btn-in-slot.dim:hover { background: rgba(36,26,12,.14); }
+
+/* ════════════════════════════════════════
+   BOTTOM — action buttons
+════════════════════════════════════════ */
+.bottom {
+  grid-area: bottom;
+  padding: 2px 18px 10px;
+}
+
+.ctrl-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 20px;
+  border-radius: 50px; border: none; cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(12px, 1.2vw, 15px); font-weight: 600;
+  letter-spacing: .04em;
+  transition: all .2s; white-space: nowrap;
+  position: relative; overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn:active { transform: scale(.96); }
+
+.btn-sage  { background:var(--sage);  color:#fff; box-shadow:0 2px 10px rgba(108,158,86,.38); }
+.btn-sage:hover  { background:var(--sage-dk); transform:translateY(-1px); }
+.btn-terra { background:var(--terra); color:#fff; box-shadow:0 2px 10px rgba(184,80,48,.38); }
+.btn-terra:hover { background:#9a3c1c; transform:translateY(-1px); }
+
+svg.ico { width:13px; height:13px; flex-shrink:0; }
+#btn-back {
+  position: fixed; bottom: 16px; left: 18px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: .67rem; font-style: italic; letter-spacing: .06em;
+  color: var(--faded-ink, #7a6a5a);
+  background: none; border: 1px solid rgba(61,50,40,.2);
+  border-radius: 3px; padding: .32rem .72rem;
+  cursor: pointer; opacity: .6;
+  transition: opacity .2s, background .2s;
+  text-decoration: none; display: inline-block;
+}
+#btn-back:hover { opacity: 1; background: rgba(232,220,200,.7); }
+</style>
+</head>
+<body>
+
+<!-- Corners -->
+<svg class="orn tl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn tr" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn bl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn br" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <h1>
+    <span class="le">Le</span>
+    <span class="bon">Bon</span>
+    <span class="mot">Mot</span>
+  </h1>
+  <div class="orn-rule">
+    <div class="orn-line"></div>
+    <span class="orn-c">— ✦ jeu de vocabulaire ✦ —</span>
+    <div class="orn-line"></div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- Letter -->
+  <div class="col-letter">
+    <div class="letter-frame">
+      <span id="bigLetter"></span>
+      <div id="letterPh">
+        <span class="ph-glyph">A–Z</span>
+        Appuyez sur<br>« Générer une Lettre »
+      </div>
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div class="col-div"></div>
+
+  <!-- 7 slots -->
+  <div class="col-slots" id="slotsGrid"></div>
+
+</div>
+
+<!-- ══ BOTTOM ══ -->
+<div class="bottom">
+  <div class="ctrl-bar">
+    <button class="btn btn-sage" onclick="generateLetter()">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      Générer une Lettre
+    </button>
+    <button class="btn btn-terra" onclick="generateThemes()">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      Générer des Thèmes
+    </button>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+const THEMES = [
+  'Métier','Sport','Animaux','Légumes','Fruits','Objet','Pays',
+  'Nourriture','Ville','Vêtement','Boisson','Se trouve à Nancy',
+  'Objet lourd','Dans une maison','Prénom',
+  'Moyen de transport','Personnage fictif','Célébrité',
+  'Petit objet (rentre dans un sac)'
+];
+
+const CONTRAINTES = [
+  'Mot de 5 lettres',
+  'Mot de 6 lettres',
+  'Mot en anglais'
+];
+
+const VARIANTES = [
+  'Le mot doit rimer en "ou" (ex : hibou, genou)',
+  'Le mot doit rimer en "eau/au/o" (ex : bateau, vélo)',
+  'Le mot doit rimer en "i" (ex : souris, parti)',
+  'Le mot doit rimer en "age" (ex : fromage, voyage)',
+  'On doit entendre le son "ch" (ex : chat, douche)',
+  'On doit entendre le son "on" (ex : ballon, maison)',
+  'On doit entendre le son "in" (ex : lapin, train)',
+  'On doit entendre le son "j" (ex : jardin, girafe)',
+  'Le mot finit par le son "oir" (ex : miroir, devoir)',
+  'Le mot contient le son "gn" (ex : montagne, gagner)',
+  "C'est un verbe (une action)",
+  'C\'est un nom masculin (on dit "un" ou "le")',
+  'C\'est un nom féminin (on dit "une" ou "la")',
+  "C'est un adjectif (pour décrire quelque chose)",
+  'Le mot est au pluriel (finit souvent par S ou X)',
+  "C'est un verbe à l'infinitif (ex : manger, finir)",
+  "C'est un mot qui désigne un lieu",
+  "C'est un mot qui exprime une émotion (ex : joie, peur)",
+  'Le mot contient une lettre double (ex : tt, ss, mm)',
+  'Le mot contient un accent (é, à, ê…)',
+  'Le mot contient un "x", un "y", un "v" ou un "z"',
+  'Le mot commence par une voyelle (A, E, I, O, U, Y)',
+  'Le mot finit par une consonne',
+  'Le mot contient 3 voyelles différentes',
+  "Le mot contient la lettre \"h\" (qu'on l'entende ou pas)",
+  'Le mot commence et finit par la même lettre',
+  "Le mot s'écrit avec exactement 4 lettres",
+  'Le mot a exactement 2 syllabes (ex : lo-to)',
+  'Le mot a exactement 3 syllabes (ex : py-ja-ma)',
+  "C'est un mot très court (moins de 4 lettres)",
+  "C'est un mot très long (plus de 8 lettres)",
+  'Le mot finit par "-ion" (ex : attention, station)',
+  'Le mot finit par "-ment" (ex : doucement, bâtiment)',
+  'Le mot contient 3 consonnes qui se suivent (ex : spectacle)'
+];
+
+const SLOT_BG = ['var(--s1-bg)','var(--s2-bg)','var(--s3-bg)','var(--s4-bg)','var(--s5-bg)'];
+const SLOT_TX = ['var(--s1-tx)','var(--s2-tx)','var(--s3-tx)','var(--s4-tx)','var(--s5-tx)'];
+
+let slotActive = [false,false,false,false,false];
+let slotThemes = ['','','','',''];
+let conActive = false, conText = '';
+let varActive = false, varText = '';
+
+/* ══════════════════════════════════
+   BUILD — 7 uniform slot rows
+══════════════════════════════════ */
+function buildSlots() {
+  const g = document.getElementById('slotsGrid');
+  g.innerHTML = '';
+
+  /* 5 theme slots */
+  for (let i = 0; i < 5; i++) {
+    const r = document.createElement('div');
+    r.className = 'slot-row';
+    r.innerHTML = `
+      <div class="stog">
+        <button class="stbtn on"      id="son-${i}"  onclick="setSlot(${i},true)">ON</button>
+        <button class="stbtn off act" id="soff-${i}" onclick="setSlot(${i},false)">OFF</button>
+      </div>
+      <div class="slot-card" id="slot-${i}">
+        <span class="slot-n">${i+1}</span>
+        <span class="slot-empty">—</span>
+      </div>`;
+    g.appendChild(r);
+  }
+
+  /* thin separator */
+  const sep = document.createElement('div');
+  sep.className = 'slot-sep-line';
+  g.appendChild(sep);
+
+  /* Contrainte slot */
+  const cr = document.createElement('div');
+  cr.className = 'slot-row';
+  cr.innerHTML = `
+    <div class="stog con-tog">
+      <button class="stbtn on"      id="cson"  onclick="setConSlot(true)">ON</button>
+      <button class="stbtn off act" id="csoff" onclick="setConSlot(false)">OFF</button>
+    </div>
+    <div class="slot-card" id="con-slot">
+      <span class="slot-label">Contrainte</span>
+      <span class="slot-empty">—</span>
+      <button class="btn-in-slot dim" onclick="drawContrainte()">
+        <svg style="width:11px;height:11px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Tirer
+      </button>
+    </div>`;
+  g.appendChild(cr);
+
+  /* Variante slot */
+  const vr = document.createElement('div');
+  vr.className = 'slot-row';
+  vr.innerHTML = `
+    <div class="stog var-tog">
+      <button class="stbtn on"      id="vson"  onclick="setVarSlot(true)">ON</button>
+      <button class="stbtn off act" id="vsoff" onclick="setVarSlot(false)">OFF</button>
+    </div>
+    <div class="slot-card" id="var-slot">
+      <span class="slot-label">Variante Français</span>
+      <span class="slot-empty">—</span>
+      <button class="btn-in-slot dim" onclick="drawVariante()">
+        <svg style="width:11px;height:11px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Tirer
+      </button>
+    </div>`;
+  g.appendChild(vr);
+}
+
+/* ══════════════════════════════════
+   THEME SLOTS
+══════════════════════════════════ */
+function setSlot(i, on) {
+  slotActive[i] = on;
+  document.getElementById(`son-${i}`).classList.toggle('act', on);
+  document.getElementById(`soff-${i}`).classList.toggle('act', !on);
+  const card = document.getElementById(`slot-${i}`);
+  if (on) {
+    card.classList.add('act');
+    card.style.background = SLOT_BG[i];
+    renderThemeSlot(i);
+  } else {
+    card.classList.remove('act');
+    card.style.background = '';
+    slotThemes[i] = '';
+    card.innerHTML = `<span class="slot-n">${i+1}</span><span class="slot-empty">—</span>`;
+  }
+}
+
+function renderThemeSlot(i) {
+  const card = document.getElementById(`slot-${i}`);
+  if (slotThemes[i]) {
+    card.innerHTML = `<span class="slot-n">${i+1}</span><span class="slot-theme anim" style="color:${SLOT_TX[i]}">${slotThemes[i]}</span>`;
+  } else {
+    card.innerHTML = `<span class="slot-n">${i+1}</span><span class="slot-empty">en attente…</span>`;
+  }
+}
+
+/* ══════════════════════════════════
+   CONTRAINTE SLOT
+══════════════════════════════════ */
+function setConSlot(on) {
+  conActive = on;
+  document.getElementById('cson').classList.toggle('act', on);
+  document.getElementById('csoff').classList.toggle('act', !on);
+  const card = document.getElementById('con-slot');
+  if (on) {
+    card.classList.add('act');
+    card.style.background = 'var(--sc-bg)';
+    renderConSlot();
+  } else {
+    card.classList.remove('act');
+    card.style.background = '';
+    conText = '';
+    card.innerHTML = `
+      <span class="slot-label">Contrainte</span>
+      <span class="slot-empty">—</span>
+      <button class="btn-in-slot dim" onclick="drawContrainte()">
+        <svg style="width:11px;height:11px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Tirer
+      </button>`;
+  }
+}
+
+function renderConSlot() {
+  const card = document.getElementById('con-slot');
+  const textHtml = conText
+    ? `<span class="slot-special-text anim" style="color:var(--sc-tx)">${conText}</span>`
+    : `<span class="slot-empty" style="padding-left:72px">en attente…</span>`;
+  card.innerHTML = `
+    <span class="slot-label">Contrainte</span>
+    ${textHtml}
+    <button class="btn-in-slot" onclick="drawContrainte()">
+      <svg style="width:11px;height:11px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Tirer
+    </button>`;
+}
+
+function drawContrainte() {
+  if (!conActive) return;
+  conText = CONTRAINTES[Math.floor(Math.random() * CONTRAINTES.length)];
+  renderConSlot();
+}
+
+/* ══════════════════════════════════
+   VARIANTE SLOT
+══════════════════════════════════ */
+function setVarSlot(on) {
+  varActive = on;
+  document.getElementById('vson').classList.toggle('act', on);
+  document.getElementById('vsoff').classList.toggle('act', !on);
+  const card = document.getElementById('var-slot');
+  if (on) {
+    card.classList.add('act');
+    card.style.background = 'var(--sv-bg)';
+    renderVarSlot();
+  } else {
+    card.classList.remove('act');
+    card.style.background = '';
+    varText = '';
+    card.innerHTML = `
+      <span class="slot-label">Variante Français</span>
+      <span class="slot-empty">—</span>
+      <button class="btn-in-slot dim" onclick="drawVariante()">
+        <svg style="width:11px;height:11px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Tirer
+      </button>`;
+  }
+}
+
+function renderVarSlot() {
+  const card = document.getElementById('var-slot');
+  const textHtml = varText
+    ? `<span class="slot-special-text anim" style="color:var(--sv-tx)">${varText}</span>`
+    : `<span class="slot-empty" style="padding-left:96px">en attente…</span>`;
+  card.innerHTML = `
+    <span class="slot-label">Variante Français</span>
+    ${textHtml}
+    <button class="btn-in-slot" onclick="drawVariante()">
+      <svg style="width:11px;height:11px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Tirer
+    </button>`;
+}
+
+function drawVariante() {
+  if (!varActive) return;
+  varText = VARIANTES[Math.floor(Math.random() * VARIANTES.length)];
+  renderVarSlot();
+}
+
+/* ══════════════════════════════════
+   LETTER
+══════════════════════════════════ */
+function generateLetter() {
+  const l = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+  const el = document.getElementById('bigLetter');
+  document.getElementById('letterPh').style.display = 'none';
+  el.classList.remove('pop');
+  el.style.opacity = '0'; el.textContent = '';
+  void el.offsetWidth;
+  el.textContent = l;
+  el.classList.add('pop');
+}
+
+/* ══════════════════════════════════
+   THEMES
+══════════════════════════════════ */
+function generateThemes() {
+  const active = slotActive.map((v,i) => v ? i : -1).filter(i => i >= 0);
+  if (!active.length) return;
+  const shuffled = [...THEMES].sort(() => Math.random() - 0.5).slice(0, active.length);
+  active.forEach((si, j) => {
+    slotThemes[si] = shuffled[j];
+    setTimeout(() => renderThemeSlot(si), j * 70);
+  });
+}
+
+buildSlots();
+</script>
+<!-- BOUTON RETOUR -->
+<a href="index.html" id="btn-back">← Retour aux jeux</a>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bases de Jeux — Annuaire</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:     #f0e8d5;
+  --paper:     #faf5e8;
+  --ink:       #2a1f10;
+  --ink-mid:   #5a4830;
+  --ink-dim:   #9a8060;
+  --ink-ghost: #c8a870;
+  --terra:     #b85030;
+  --terra-lt:  #d4785a;
+  --sage:      #6c9e56;
+  --sage-dk:   #4c7838;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  min-height: 100vh;
+  background: var(--cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  font-family: 'Lora', Georgia, serif;
+  color: var(--ink);
+}
+
+/* Cadre */
+body::after {
+  content:''; position:fixed; inset:8px;
+  border:1.5px solid rgba(184,80,48,.18);
+  border-radius:6px; pointer-events:none; z-index:900;
+}
+.corner { position:fixed; pointer-events:none; z-index:901; opacity:.22; width:50px; height:50px; }
+.corner.tl { top:10px; left:10px; }
+.corner.tr { top:10px; right:10px; transform:scaleX(-1); }
+.corner.bl { bottom:10px; left:10px; transform:scaleY(-1); }
+.corner.br { bottom:10px; right:10px; transform:scale(-1); }
+
+/* ══ BARRE SUPÉRIEURE FIXE ══ */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 56px;
+  background: var(--cream);
+  border-bottom: 1.5px solid var(--ink);
+}
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.top-bar-back {
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color .2s;
+}
+.top-bar-back:hover { color: var(--terra); }
+.top-bar-back-line {
+  width: 20px; height: 1px;
+  background: currentColor;
+}
+.top-bar-sep {
+  width: 1px; height: 22px;
+  background: rgba(42,31,16,.18);
+}
+.top-bar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.top-bar-title .acc { color:var(--terra); font-style:italic; }
+.top-bar-title .sub {
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-dim);
+  letter-spacing: 0;
+  margin-left: 10px;
+}
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.top-bar-count {
+  padding: 4px 12px;
+  border: 1px solid rgba(184,80,48,.3);
+  border-radius: 2px;
+  color: var(--terra);
+  font-size: 10px;
+}
+
+/* ══ EN-TÊTE DE SECTION ══ */
+.section-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-left: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+}
+.section-header-left {
+  padding: 48px 48px 42px;
+  border-right: 1.5px solid var(--ink);
+}
+.section-eyebrow {
+  font-size: 9.5px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--terra);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 4.5vw, 64px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.025em;
+  color: var(--ink);
+}
+.section-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--terra);
+}
+.section-desc {
+  margin-top: 18px;
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  line-height: 1.6;
+  max-width: 380px;
+}
+.section-header-right {
+  padding: 48px 48px 42px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+.section-ornament {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(72px, 10vw, 140px);
+  font-style: italic;
+  font-weight: 900;
+  color: var(--ink);
+  opacity: .045;
+  line-height: 1;
+  user-select: none;
+  letter-spacing: -.04em;
+}
+.section-meta {
+  margin-top: 12px;
+  display: flex;
+  gap: 32px;
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+.section-meta-item span {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--terra);
+  margin-bottom: 4px;
+}
+
+/* ══ GRILLE CATALOGUE ══ */
+.catalogue {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-left: 1.5px solid var(--ink);
+}
+
+/* Chaque cellule */
+.cat-item {
+  text-decoration: none;
+  color: inherit;
+  border-right: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+/* Image visible en permanence */
+.cat-bg {
+  position: absolute; inset: 0;
+  z-index: 0;
+}
+.cat-bg img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: sepia(.2) saturate(.75) brightness(.72) contrast(1.08);
+  transition: filter .45s ease, transform .5s ease;
+  transform: scale(1.03);
+}
+.cat-item:hover .cat-bg img {
+  filter: sepia(.08) saturate(.9) brightness(.55) contrast(1.1);
+  transform: scale(1);
+}
+
+/* Fallback couleur si pas d'image */
+.cat-bg-fallback {
+  position: absolute; inset: 0;
+  z-index: 0;
+}
+
+/* Gradient permanent sur l'image pour lisibilité du texte */
+.cat-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(20,12,4,0.10) 0%,
+    rgba(20,12,4,0.22) 40%,
+    rgba(20,12,4,0.72) 80%,
+    rgba(20,12,4,0.88) 100%
+  );
+  z-index: 1;
+  transition: background .38s ease;
+}
+.cat-item:hover .cat-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(20,12,4,0.18) 0%,
+    rgba(20,12,4,0.30) 35%,
+    rgba(20,12,4,0.82) 75%,
+    rgba(20,12,4,0.95) 100%
+  );
+}
+
+/* Numéro */
+.cat-num {
+  position: absolute;
+  top: 16px; right: 18px;
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(240,232,213,.45);
+  letter-spacing: .1em;
+  z-index: 3;
+  transition: color .3s;
+}
+.cat-item:hover .cat-num { color: rgba(240,232,213,.7); }
+
+/* Contenu */
+.cat-body {
+  padding: 24px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.cat-tag {
+  font-size: 9px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--terra-lt);
+  margin-bottom: 9px;
+}
+.cat-item:hover .cat-tag { color: var(--terra-lt); }
+
+.cat-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(17px, 1.8vw, 23px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  color: var(--cream);
+  margin-bottom: 10px;
+}
+
+.cat-desc {
+  font-style: italic;
+  font-size: 12px;
+  color: rgba(200,168,112,.82);
+  line-height: 1.5;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .35s ease, opacity .3s;
+  opacity: 0;
+}
+.cat-item:hover .cat-desc {
+  max-height: 80px;
+  opacity: 1;
+}
+
+/* Flèche */
+.cat-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--cream);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .3s .06s, transform .3s .06s;
+}
+.cat-arrow-line {
+  width: 24px; height: 1px;
+  background: var(--terra);
+  transition: width .3s;
+}
+.cat-item:hover .cat-arrow { opacity:1; transform:translateY(0); }
+.cat-item:hover .cat-arrow-line { width:40px; }
+
+/* Cellule VEDETTE — 2 colonnes × 2 lignes */
+.cat-item.featured {
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 600px;
+}
+.cat-item.featured .cat-body { padding: 36px 32px 32px; }
+.cat-item.featured .cat-title { font-size: clamp(26px, 2.8vw, 40px); margin-bottom: 12px; }
+.cat-item.featured .cat-desc { font-size: 13.5px; }
+
+/* Cellule LARGE — 2 colonnes */
+.cat-item.wide {
+  grid-column: span 2;
+}
+
+/* Fallbacks de couleur (si pas d'image) */
+.cat-item:nth-child(1) .cat-bg-fallback { background: linear-gradient(135deg, #3a2a18 0%, #6a3a20 100%); }
+.cat-item:nth-child(2) .cat-bg-fallback { background: linear-gradient(135deg, #1e2c1a 0%, #3a5828 100%); }
+.cat-item:nth-child(3) .cat-bg-fallback { background: linear-gradient(135deg, #1a1e2c 0%, #28355a 100%); }
+.cat-item:nth-child(4) .cat-bg-fallback { background: linear-gradient(135deg, #2c1a1a 0%, #5a2828 100%); }
+.cat-item:nth-child(5) .cat-bg-fallback { background: linear-gradient(135deg, #1a2c28 0%, #285a50 100%); }
+.cat-item:nth-child(6) .cat-bg-fallback { background: linear-gradient(135deg, #2a1a2c 0%, #50285a 100%); }
+.cat-item:nth-child(7) .cat-bg-fallback { background: linear-gradient(135deg, #2c261a 0%, #5a4828 100%); }
+
+/* Footer */
+.footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 11px;
+  letter-spacing: .14em;
+  color: var(--ink-ghost);
+}
+.footer-orn { color:var(--terra); font-size:14px; opacity:.45; }
+
+/* Animations entrée */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.section-header { animation: fadeUp .5s ease both; }
+.cat-item { animation: fadeUp .5s ease both; }
+.cat-item:nth-child(1) { animation-delay:.08s; }
+.cat-item:nth-child(2) { animation-delay:.14s; }
+.cat-item:nth-child(3) { animation-delay:.20s; }
+.cat-item:nth-child(4) { animation-delay:.26s; }
+.cat-item:nth-child(5) { animation-delay:.32s; }
+.cat-item:nth-child(6) { animation-delay:.38s; }
+.cat-item:nth-child(7) { animation-delay:.44s; }
+
+/* Responsive */
+@media (max-width:1000px) {
+  .catalogue { grid-template-columns: repeat(2, 1fr); }
+  .cat-item.featured { grid-column: span 2; min-height: 380px; }
+  .cat-item.wide { grid-column: span 2; }
+  .section-header { grid-template-columns: 1fr; }
+  .section-header-left { border-right: none; border-bottom: 1.5px solid var(--ink); }
+  .section-header-right { display: none; }
+  .top-bar { padding: 0 24px; }
+}
+@media (max-width:560px) {
+  .catalogue { grid-template-columns: 1fr; }
+  .cat-item.featured, .cat-item.wide { grid-column: span 1; }
+  .top-bar-back span:not(.top-bar-back-line) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Coins décoratifs -->
+<svg class="corner tl" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+<svg class="corner tr" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+<svg class="corner bl" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+<svg class="corner br" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+
+<!-- BARRE FIXE -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <a class="top-bar-back" href="../index.html">
+      <div class="top-bar-back-line"></div>
+      <span>Retour</span>
+    </a>
+    <div class="top-bar-sep"></div>
+    <div class="top-bar-title">
+      Bases <span class="acc">de Jeux</span>
+      <span class="sub">— sous-catégorie</span>
+    </div>
+  </div>
+  <div class="top-bar-right">
+    <span>— choisissez votre jeu —</span>
+    <span class="top-bar-count">7 jeux</span>
+  </div>
+</div>
+
+<!-- EN-TÊTE DE SECTION -->
+<div class="section-header">
+  <div class="section-header-left">
+    <div class="section-eyebrow">Mes Jeux — Catalogue</div>
+    <div class="section-title">Bases<br><em>de Jeux</em></div>
+    <div class="section-desc">Les fondations de toute collection : vocabulaire, chiffres, lettres, drapeaux. Des mécaniques essentielles, jouées seul ou en famille.</div>
+  </div>
+  <div class="section-header-right">
+    <div class="section-ornament">Jeux</div>
+    <div class="section-meta">
+      <div class="section-meta-item">
+        <span>7</span>
+        Jeux
+      </div>
+      <div class="section-meta-item">
+        <span>4</span>
+        Thèmes
+      </div>
+      <div class="section-meta-item">
+        <span>∞</span>
+        Parties
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRILLE CATALOGUE -->
+<div class="catalogue">
+
+  <!-- Cellule vedette 2×2 -->
+  <a class="cat-item featured" href="le-bon-mot.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image1.jpg" alt="Le Bon Mot" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">01</div>
+    <div class="cat-body">
+      <div class="cat-tag">Vocabulaire</div>
+      <div class="cat-title">Le Bon Mot</div>
+      <div class="cat-desc">Jeu de vocabulaire — lettres, thèmes et variantes pour toute la famille.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+  <!-- 2 cellules normales : colonne 3 + 4, ligne 1 -->
+  <a class="cat-item" href="lanceur-des.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image2.jpg" alt="Lanceur de Dés" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">02</div>
+    <div class="cat-body">
+      <div class="cat-tag">Stratégie</div>
+      <div class="cat-title">Lanceur de Dés</div>
+      <div class="cat-desc">Lancez jusqu'à 10 dés colorés, bloquez vos favoris.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+  <a class="cat-item" href="Les-mots.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image3.jpg" alt="Les Mots" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">03</div>
+    <div class="cat-body">
+      <div class="cat-tag">Langage</div>
+      <div class="cat-title">Les Mots</div>
+      <div class="cat-desc">Trouvez, composez et déchiffrez des mots.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+  <!-- Ligne 2, col 3+4 (la vedette occupe col 1-2 sur 2 lignes) -->
+  <a class="cat-item" href="drapeaux.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image4.jpg" alt="Drapeaux" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">04</div>
+    <div class="cat-body">
+      <div class="cat-tag">Géographie</div>
+      <div class="cat-title">Drapeaux</div>
+      <div class="cat-desc">Reconnaissez les drapeaux du monde entier.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+  <a class="cat-item" href="générateur-mots.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image5.jpg" alt="Générateur de Mots" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">05</div>
+    <div class="cat-body">
+      <div class="cat-tag">Créativité</div>
+      <div class="cat-title">Générateur de Mots</div>
+      <div class="cat-desc">Générez des mots aléatoires du lexique.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+  <!-- Ligne 3 : 1 large + 1 normale -->
+  <a class="cat-item wide" href="générateur-nombres.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image6.jpg" alt="Générateur de Nombres" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">06</div>
+    <div class="cat-body">
+      <div class="cat-tag">Calcul</div>
+      <div class="cat-title">Générateur de Nombres</div>
+      <div class="cat-desc">Tirez des nombres au hasard selon vos règles et explorez les probabilités.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+  <a class="cat-item wide" href="tableau-lettres.html">
+    <div class="cat-bg-fallback"></div>
+    <div class="cat-bg">
+      <img src="image7.jpg" alt="Tableau de Lettres" onerror="this.onerror=null;this.style.display='none'">
+    </div>
+    <div class="cat-overlay"></div>
+    <div class="cat-num">07</div>
+    <div class="cat-body">
+      <div class="cat-tag">Grille</div>
+      <div class="cat-title">Tableau de Lettres</div>
+      <div class="cat-desc">Formez un maximum de mots cachés dans la grille.</div>
+      <div class="cat-arrow"><div class="cat-arrow-line"></div>Jouer</div>
+    </div>
+  </a>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer-bar">
+  <span>Cliquez sur un jeu pour le lancer</span>
+  <span class="footer-orn">✦</span>
+  <span>Bases de Jeux — Collection 2024</span>
+</div>
+
+</body>
+</html>

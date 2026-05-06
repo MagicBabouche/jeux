@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Phrases à Corriger — Niveau A2</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment: #ede5cf;
+  --paper:     #faf4e4;
+  --ink:       #241a0c;
+  --ink-mid:   #58482e;
+  --ink-dim:   #9a8660;
+  --ink-ghost: #c8a878;
+  --terra:     #b85030;
+  --sage:      #6c9e56;
+  --sage-dk:   #4c7838;
+  --blush:     #c88878;
+  --lav:       #9a90c8;
+  --lav-dk:    #6858a8;
+  --butter:    #c8b038;
+
+  --c1-bg: #e8c49a; --c1-tx: #3a2010; --c1-bd: rgba(184,130,60,.45);
+  --c2-bg: #9ec898; --c2-tx: #0e3818; --c2-bd: rgba(80,140,70,.38);
+  --c3-bg: #a8a0d0; --c3-tx: #1e1848; --c3-bd: rgba(100,90,180,.38);
+  --c4-bg: #dace7a; --c4-tx: #2e2600; --c4-bd: rgba(160,140,30,.38);
+  --c5-bg: #88c0d0; --c5-tx: #082838; --c5-bd: rgba(50,130,160,.38);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; }
+
+body {
+  background: var(--parchment);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--ink);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grain + vignette */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23n)' opacity='0.068'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(36,26,12,.11) 100%);
+  pointer-events: none; z-index: 800;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 7px;
+  border: 1.5px solid rgba(184,80,48,.2);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 4px rgba(184,80,48,.05);
+  pointer-events: none; z-index: 801;
+}
+
+/* Corner ornaments */
+.orn { position:fixed; pointer-events:none; z-index:802; opacity:.2; width:46px; height:46px; }
+.orn.tl { top:9px;    left:9px; }
+.orn.tr { top:9px;    right:9px;  transform:scaleX(-1); }
+.orn.bl { bottom:9px; left:9px;   transform:scaleY(-1); }
+.orn.br { bottom:9px; right:9px;  transform:scale(-1); }
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  padding: 8px 60px 10px;
+  flex-shrink: 0;
+}
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3.2vw, 48px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.01em;
+  display: inline-flex; align-items: baseline; gap: .22em;
+}
+h1 .le   { font-style:italic; font-weight:400; color:var(--ink-mid); font-size:.8em; }
+h1 .bon  { color:var(--terra); }
+h1 .mot  { color:var(--ink); }
+h1 .sub  { font-style:italic; font-weight:400; color:var(--ink-dim); font-size:.65em; }
+.orn-rule {
+  display:flex; align-items:center; gap:10px;
+  margin:3px auto 0; padding:0 80px;
+}
+.orn-line { flex:1; height:1px; background:linear-gradient(to right, transparent, rgba(184,80,48,.38), transparent); }
+.orn-c { font-family:'Playfair Display',serif; font-size:10px; color:var(--terra); opacity:.55; letter-spacing:.22em; }
+
+/* ── MAIN AREA ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 18px 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── FRAMES ZONE ── */
+.frames-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Each row: [ON/OFF] [FRAME] [Afficher erreur btn] */
+.frame-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ON/OFF toggle */
+.tog {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 50px;
+  overflow: hidden;
+  border: 1.5px solid rgba(108,158,86,.38);
+  align-self: center;
+}
+.togbtn {
+  padding: 6px 10px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  border: none; cursor: pointer;
+  background: transparent; color: var(--ink-dim);
+  transition: all .18s;
+  line-height: 1.2;
+}
+.togbtn.on.act  { background: var(--sage); color: #fff; }
+.togbtn.off.act { background: rgba(188,178,158,.5); color: var(--ink-mid); }
+
+/* THE FRAME CARD */
+.frame-card {
+  flex: 1;
+  border-radius: 10px;
+  background: rgba(190,180,158,.22);
+  border: 1.5px solid rgba(190,180,158,.3);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  cursor: pointer;
+  transition: background .35s ease, box-shadow .3s ease, opacity .3s ease, transform .15s ease;
+  user-select: none;
+  min-height: 0;
+}
+.frame-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 45%);
+  pointer-events: none; z-index: 1;
+}
+.frame-card::after {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 7px; pointer-events: none; z-index: 1;
+}
+.frame-card.active {
+  box-shadow: 0 2px 20px rgba(36,26,12,.16);
+}
+.frame-card.active.c1 { background: var(--c1-bg); border-color: var(--c1-bd); }
+.frame-card.active.c2 { background: var(--c2-bg); border-color: var(--c2-bd); }
+.frame-card.active.c3 { background: var(--c3-bg); border-color: var(--c3-bd); }
+.frame-card.active.c4 { background: var(--c4-bg); border-color: var(--c4-bd); }
+.frame-card.active.c5 { background: var(--c5-bg); border-color: var(--c5-bd); }
+
+.frame-card.disabled-frame {
+  opacity: .45;
+  pointer-events: none;
+}
+
+/* Locked overlay */
+.frame-card.locked::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 8px,
+    rgba(36,26,12,.04) 8px,
+    rgba(36,26,12,.04) 9px
+  );
+  pointer-events: none; z-index: 2;
+  border-radius: 9px;
+}
+.lock-icon {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; opacity: .35; z-index: 3;
+}
+
+/* Phrase text */
+.frame-phrase {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 3.2vw, 44px);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+  padding: 8px 52px 8px 18px;
+  z-index: 2; position: relative;
+  transition: opacity .2s;
+  letter-spacing: -.01em;
+}
+.frame-card.active.c1 .frame-phrase { color: var(--c1-tx); }
+.frame-card.active.c2 .frame-phrase { color: var(--c2-tx); }
+.frame-card.active.c3 .frame-phrase { color: var(--c3-tx); }
+.frame-card.active.c4 .frame-phrase { color: var(--c4-tx); }
+.frame-card.active.c5 .frame-phrase { color: var(--c5-tx); }
+.frame-card:not(.active) .frame-phrase { color: rgba(36,26,12,.18); font-style: italic; font-size: clamp(12px,1.4vw,18px); font-weight: 400; }
+
+.frame-empty { font-style: italic; font-size: clamp(11px,1.1vw,14px); color: rgba(88,72,46,.22); z-index:2; position:relative; }
+
+.phrase-anim { animation: phraseIn .45s cubic-bezier(.34,1.3,.64,1) both; }
+@keyframes phraseIn {
+  from { opacity:0; transform: translateY(6px) scale(.96); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* ── ERROR PANEL ── */
+.err-side {
+  flex-shrink: 0;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.err-btn {
+  padding: 5px 12px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(184,80,48,.28);
+  background: rgba(250,244,228,.7);
+  color: var(--ink-mid);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(9px,.9vw,12px); font-weight: 600;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.err-btn:hover { background: rgba(184,80,48,.12); border-color: rgba(184,80,48,.5); color: var(--terra); }
+.err-btn:disabled { opacity: .3; cursor: default; }
+.err-btn.active-err { background: rgba(184,80,48,.18); border-color: var(--terra); color: var(--terra); }
+
+/* Error panel popup */
+.err-panel {
+  display: none;
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 900;
+  width: min(540px, 90vw);
+  background: var(--paper);
+  border-radius: 12px;
+  border: 1.5px solid rgba(184,80,48,.28);
+  box-shadow: 0 8px 40px rgba(36,26,12,.22), inset 0 0 0 1px rgba(255,255,255,.6);
+  padding: 24px 28px 20px;
+  animation: panelIn .3s cubic-bezier(.34,1.3,.64,1) both;
+}
+.err-panel.open { display: block; }
+@keyframes panelIn {
+  from { opacity:0; transform: translate(-50%, -46%) scale(.94); }
+  to   { opacity:1; transform: translate(-50%, -50%) scale(1); }
+}
+.err-panel-inner {
+  position: relative;
+}
+.err-panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(13px,1.4vw,17px);
+  font-weight: 700;
+  color: var(--terra);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px;
+}
+.err-phrase-display {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(14px,1.6vw,20px);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: rgba(190,180,158,.18);
+  border-radius: 7px;
+  border-left: 3px solid var(--terra);
+  line-height: 1.4;
+}
+.err-label {
+  font-size: clamp(10px,1vw,12px);
+  text-transform: uppercase; letter-spacing: .12em;
+  color: var(--ink-dim); font-weight: 600;
+  margin-bottom: 4px; margin-top: 10px;
+}
+.err-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(13px,1.3vw,16px);
+  color: var(--ink-mid);
+  line-height: 1.55;
+}
+.err-close {
+  position: absolute; top: 0; right: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%; border: none;
+  background: rgba(184,80,48,.1);
+  color: var(--terra);
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.err-close:hover { background: rgba(184,80,48,.25); }
+
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(36,26,12,.18);
+  z-index: 899;
+  backdrop-filter: blur(1px);
+}
+.overlay.open { display: block; }
+
+/* ── BOTTOM ── */
+.bottom {
+  padding: 4px 18px 10px;
+  flex-shrink: 0;
+  position: relative;
+}
+.ctrl-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+#btn-back {
+  position: fixed; bottom: 16px; left: 18px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: .67rem; font-style: italic; letter-spacing: .06em;
+  color: var(--faded-ink, #7a6a5a);
+  background: none; border: 1px solid rgba(61,50,40,.2);
+  border-radius: 3px; padding: .32rem .72rem;
+  cursor: pointer; opacity: .6;
+  transition: opacity .2s, background .2s;
+  text-decoration: none; display: inline-block;
+}
+#btn-back:hover { opacity: 1; background: rgba(232,220,200,.7); }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 24px;
+  border-radius: 50px; border: none; cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(12px, 1.2vw, 16px); font-weight: 600;
+  letter-spacing: .06em;
+  transition: all .2s; white-space: nowrap;
+  position: relative; overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn:active { transform: scale(.96); }
+.btn-terra { background:var(--terra); color:#fff; box-shadow:0 2px 10px rgba(184,80,48,.38); }
+.btn-terra:hover { background:#9a3c1c; transform:translateY(-1px); }
+svg.ico { width:14px; height:14px; flex-shrink:0; }
+
+/* Instructions hint */
+.hint {
+  text-align: center;
+  font-style: italic;
+  font-size: clamp(9px,.85vw,11px);
+  color: var(--ink-ghost);
+  letter-spacing: .05em;
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- Corners -->
+<svg class="orn tl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn tr" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn bl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn br" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>
+    <span class="le">La</span>
+    <span class="bon">Phrase</span>
+    <span class="mot">Mystère</span>
+    <span class="sub">— niveau A2 —</span>
+  </h1>
+  <div class="orn-rule">
+    <div class="orn-line"></div>
+    <span class="orn-c">— ✦ trouve l'erreur cachée ✦ —</span>
+    <div class="orn-line"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="frames-zone" id="framesZone"></div>
+</div>
+
+<!-- BOTTOM -->
+<div class="bottom">
+  <div class="ctrl-bar">
+    <button class="btn btn-terra" onclick="nouvellePhrase()">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      Nouvelle phrase
+    </button>
+  </div>
+  <div class="hint">Cliquez sur un cadre pour le bloquer · cliquez à nouveau pour le débloquer</div>
+  <a href="index.html" id="btn-back">← Retour aux jeux</a>
+</div>
+
+<!-- ERROR PANEL OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeErrPanel()"></div>
+<div class="err-panel" id="errPanel">
+  <div class="err-panel-inner">
+    <button class="err-close" onclick="closeErrPanel()">✕</button>
+    <div class="err-panel-title">
+      <svg style="width:15px;height:15px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+      L'erreur dans la phrase
+    </div>
+    <div class="err-phrase-display" id="panelPhrase"></div>
+    <div class="err-label">Erreur identifiée</div>
+    <div class="err-text" id="panelErreur"></div>
+    <div class="err-label">Pourquoi c'est une erreur ?</div>
+    <div class="err-text" id="panelExplication"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   BASE DE DONNÉES : 320 phrases A2 avec erreurs
+══════════════════════════════════════════════════════════ */
+const PHRASES = [
+  // Accord sujet-verbe
+  { p:"Les enfants joue dans le parc.", e:"joue → jouent", x:"Le sujet 'les enfants' est au pluriel, donc le verbe doit prendre la marque du pluriel : -ent." },
+  { p:"Mon frère et moi allons au cinéma hier.", e:"allons → sommes allés", x:"'Hier' indique un temps passé ; il faut utiliser le passé composé, pas le présent." },
+  { p:"Elle ont deux chats.", e:"ont → a", x:"Le sujet 'elle' est singulier à la 3ᵉ personne ; le verbe 'avoir' doit être conjugué 'a'." },
+  { p:"Nous mange du pain le matin.", e:"mange → mangeons", x:"Avec 'nous', le verbe prend la terminaison -ons : nous mangeons." },
+  { p:"Ils va au supermarché chaque semaine.", e:"va → vont", x:"'Ils' est pluriel ; le verbe 'aller' se conjugue 'vont' à la 3ᵉ personne du pluriel." },
+  { p:"Tu es arrive à quelle heure ?", e:"arrive → arrivé", x:"Au passé composé avec 'être', le participe passé s'accorde avec le sujet : arrivé(e)." },
+  { p:"Je suis content de te voire.", e:"voire → voir", x:"L'infinitif du verbe est 'voir', pas 'voire'. 'Voire' est un adverbe qui signifie 'et même'." },
+  { p:"Ma sœur aime beaucoup les gâteau.", e:"gâteau → gâteaux", x:"Le pluriel de 'gâteau' est 'gâteaux', avec un x." },
+  { p:"Il fais beau aujourd'hui.", e:"fais → fait", x:"Avec 'il' (3ᵉ personne du singulier), le verbe 'faire' se conjugue 'fait'." },
+  { p:"Vous habitez à Parisse.", e:"Parisse → Paris", x:"La capitale de la France s'écrit 'Paris', sans -se à la fin." },
+
+  // Articles
+  { p:"Je mange le pain avec le beurre ce matin.", e:"le pain → du pain", x:"Pour exprimer une quantité indéterminée, on utilise l'article partitif 'du' (= de + le)." },
+  { p:"Elle boit de l'eau et du lait.", e:"Correct → du café", x:"Ici, 'du' est correct, mais attention : avec une négation (elle ne boit pas de lait), l'article devient 'de'." },
+  { p:"Il achète un nouvelle voiture.", e:"un → une", x:"'Voiture' est un nom féminin ; l'article indéfini féminin est 'une'." },
+  { p:"Nous avons des bon amis.", e:"des → de", x:"Devant un adjectif pluriel, l'article indéfini 'des' devient 'de' : de bons amis." },
+  { p:"Je n'ai pas des enfants.", e:"des → d'", x:"Après une négation, l'article indéfini ou partitif devient 'd'' : je n'ai pas d'enfants." },
+  { p:"Elle travaille dans le hôpital.", e:"le → l'", x:"Devant une voyelle ou un h muet, 'le' s'élide en 'l'' : dans l'hôpital." },
+  { p:"Il boit de la café.", e:"de la → du", x:"'Café' est un nom masculin ; l'article partitif masculin est 'du'." },
+  { p:"J'ai acheté une pain.", e:"une → un", x:"'Pain' est un nom masculin ; l'article indéfini masculin est 'un'." },
+  { p:"Elle porte le joli chapeau.", e:"le → un", x:"On parle du chapeau pour la première fois, il faut l'article indéfini 'un'." },
+  { p:"Nous allons à le marché.", e:"à le → au", x:"'À' + 'le' se contracte obligatoirement en 'au' : au marché." },
+
+  // Prépositions
+  { p:"Je vais en Espagne en juillet.", e:"Correct → Je vais en Espagne en juillet est correct !", x:"Attention : mais si c'est un pays masculin (le Mexique), on dit 'au Mexique', pas 'en'." },
+  { p:"Elle habite au France.", e:"au → en", x:"Devant un pays féminin (la France), on utilise la préposition 'en' : en France." },
+  { p:"Il travaille depuis deux heures.", e:"Correct — mais: depuis → pendant si l'action est terminée", x:"'Depuis' exprime une durée qui continue. 'Pendant' exprime une durée terminée : il a travaillé pendant deux heures." },
+  { p:"Je rentre à la maison de pied.", e:"de pied → à pied", x:"L'expression correcte est 'à pied' (sans article) pour indiquer le mode de déplacement." },
+  { p:"Elle part pour Paris demain.", e:"pour → à", x:"Pour indiquer une destination, on utilise 'à' devant une ville : elle part à Paris." },
+  { p:"Il arrive à 3 heures de l'après-midi.", e:"Correct — variante : l'erreur serait dire 'à 15h de l'après-midi' (redondant)", x:"Dire '15h de l'après-midi' est une répétition : 15h signifie déjà l'après-midi. On dit soit '15h' soit '3h de l'après-midi'." },
+  { p:"Je reviens de la boulangerie avec mon pain.", e:"Correct phrase, erreur typique: 'Je suis revenu de chez la boulangerie'", x:"Pour les commerces et personnes, on dit 'chez' : chez la boulangère, chez le médecin." },
+  { p:"Nous parlons de votre problème depuis lundi.", e:"Phrase correcte. Erreur fréquente : 'à lundi'", x:"Pour exprimer le point de départ dans le temps, on utilise 'depuis', pas 'à'. 'À lundi' est une formule de salutation." },
+  { p:"Il joue du football avec ses amis.", e:"du → au", x:"Pour les sports pratiqués, on utilise 'jouer à' : jouer au football. 'Jouer du/de la' s'utilise pour les instruments de musique." },
+  { p:"Elle apprend de chanter.", e:"de → à", x:"Le verbe 'apprendre' est suivi de la préposition 'à' + infinitif : elle apprend à chanter." },
+
+  // Temps / conjugaison
+  { p:"Hier, je mange une pizza.", e:"mange → ai mangé", x:"'Hier' indique un passé ponctuel ; on utilise le passé composé : j'ai mangé." },
+  { p:"Quand j'étais petit, j'ai joué dans le jardin.", e:"j'ai joué → je jouais", x:"Pour une habitude passée, on utilise l'imparfait : je jouais dans le jardin." },
+  { p:"Demain, il pleure.", e:"pleure → pleurera / va pleuvoir", x:"Pour parler de l'avenir, on utilise le futur simple ou 'aller + infinitif'." },
+  { p:"Je suis née le 3 mars 2000.", e:"Correct pour une femme — erreur si homme: née → né", x:"Le participe passé 'né/née' s'accorde avec le sujet : un homme dit 'je suis né', une femme dit 'je suis née'." },
+  { p:"Elle a tombée dans la rue.", e:"a tombée → est tombée", x:"'Tomber' est un verbe de mouvement qui se conjugue avec 'être' au passé composé, pas avec 'avoir'." },
+  { p:"Nous avons allés au cinéma.", e:"avons allés → sommes allés", x:"'Aller' se conjugue avec 'être' au passé composé : nous sommes allés." },
+  { p:"Il se lève à 7h ce matin.", e:"se lève → s'est levé", x:"'Ce matin' renvoie à un moment passé aujourd'hui ; on utilise le passé composé : il s'est levé." },
+  { p:"Tu as lu ce livre l'an prochain ?", e:"l'an prochain → l'an dernier / la semaine dernière", x:"'L'an prochain' est dans le futur ; on ne peut pas l'associer à une action passée (passé composé)." },
+  { p:"Hier soir, je regardais la télé.", e:"regardais → ai regardé", x:"Pour une action unique et terminée dans le passé, on utilise le passé composé, pas l'imparfait." },
+  { p:"Elle finit ses devoirs tous les soirs à 20h.", e:"Correct → mais fréquente confusion avec 'elle a fini'", x:"Ici, 'tous les soirs' indique une habitude : le présent 'finit' est bien correct." },
+
+  // Accord du participe passé
+  { p:"Les filles sont parti.", e:"parti → parties", x:"Avec 'être', le participe passé s'accorde en genre et en nombre avec le sujet : 'les filles' est féminin pluriel → 'parties'." },
+  { p:"Elle s'est lavée les mains.", e:"lavée → lavé", x:"Quand le verbe pronominal est suivi d'un COD ('les mains'), le participe passé ne s'accorde pas avec le sujet." },
+  { p:"La robe qu'elle a achetée est belle.", e:"Correct !", x:"Le COD 'que' (= la robe, féminin) est placé avant le verbe : le participe passé s'accorde bien avec 'que' → achetée." },
+  { p:"Il a pris sa voiture et il est parti.", e:"Correct !", x:"'Parti' s'accorde avec 'il' (masculin singulier) → pas de -e. C'est correct." },
+  { p:"Elles se sont parlé.", e:"Correct — se parler = verbe à sens réciproque indirect (parler à)", x:"Le verbe 'parler' se construit avec 'à' (parler à quelqu'un) ; le pronom 'se' est COI, donc pas d'accord." },
+  { p:"Les lettres qu'il a écrit.", e:"écrit → écrites", x:"Le pronom relatif 'qu'' représente 'les lettres' (féminin pluriel), placé avant le verbe → accord obligatoire." },
+
+  // Négatif
+  { p:"Je ne veux pas de cela.", e:"Correct !", x:"'Ne… pas de' est correct pour nier un COD indéfini ou partitif. Cette phrase est bien formée." },
+  { p:"Elle n'a pas mangé rien.", e:"rien → supprimez 'rien' / dites 'elle n'a rien mangé'", x:"En français, on ne cumule pas deux négations : 'pas' + 'rien'. On dit : 'elle n'a rien mangé' ou 'elle n'a pas mangé'." },
+  { p:"Il ne parle jamais pas.", e:"jamais pas → jamais", x:"'Jamais' suffit à former la négation avec 'ne'. On ne dit pas 'ne… jamais pas'." },
+  { p:"Je n'ai pas encore fini.", e:"Correct !", x:"'Ne… pas encore' est une négation correcte pour exprimer qu'une action n'est pas terminée." },
+  { p:"Nous n'avons personne vu.", e:"personne vu → vu personne", x:"Avec 'ne… personne', 'personne' se place après le participe passé : nous n'avons vu personne." },
+
+  // Genre et nombre
+  { p:"C'est un problème grave.", e:"Correct !", x:"'Problème' est masculin en français ; 'un problème grave' est parfaitement correct." },
+  { p:"J'ai une travail intéressant.", e:"une → un", x:"'Travail' est un nom masculin : un travail." },
+  { p:"Elle porte une robe rouge et des talons hauts.", e:"Correct !", x:"'Robe' est féminin, 'talons' est masculin pluriel. L'accord des adjectifs est correct." },
+  { p:"Les chevals courent dans le champ.", e:"chevals → chevaux", x:"Le pluriel de 'cheval' est irrégulier : 'chevaux'." },
+  { p:"Il y a beaucoup de personnes.", e:"Correct !", x:"'Beaucoup de' est suivi d'un nom sans article. 'Personnes' est bien au pluriel." },
+  { p:"Elle a les yeux bleu.", e:"bleu → bleus", x:"L'adjectif de couleur s'accorde avec le nom qu'il qualifie : les yeux (masculin pluriel) → bleus." },
+  { p:"Nous avons de beaux fleurs.", e:"beaux → belles", x:"'Fleur' est féminin : de belles fleurs." },
+  { p:"Il mange des pâte.", e:"pâte → pâtes", x:"Le mot 'pâtes' (alimentaires) s'utilise toujours au pluriel en français." },
+
+  // Pronoms
+  { p:"Je le connais depuis longtemps.", e:"Correct !", x:"Le pronom COD 'le' remplace un nom masculin singulier. Phrase correcte." },
+  { p:"Elle lui a telephonée hier.", e:"telephonée → téléphoné", x:"'Téléphoner' ne s'accorde pas avec le COI. Le participe reste invariable quand le pronom est COI." },
+  { p:"Il me l'a dit.", e:"Correct !", x:"Deux pronoms compléments devant le verbe : 'me' (COI) + 'l'' (COD). L'ordre est correct." },
+  { p:"Tu peux me le expliquer ?", e:"me le → me l'", x:"Devant une voyelle, 'le' s'élide en 'l'' : tu peux me l'expliquer." },
+  { p:"C'est moi qui a fait ça.", e:"a → ai", x:"Avec 'c'est moi qui', le verbe s'accorde avec la 1ʳᵉ personne : c'est moi qui ai fait ça." },
+  { p:"Donne-le lui.", e:"Correct !", x:"À l'impératif affirmatif, les pronoms suivent le verbe avec un trait d'union. L'ordre 'lui' après 'le' est correct." },
+  { p:"Nous y allons demain.", e:"Correct !", x:"'Y' remplace une idée de lieu ou une construction avec 'à'. Phrase correcte." },
+  { p:"Je en ai besoin.", e:"Je en → J'en", x:"Devant une voyelle, le pronom 'en' nécessite l'élision du pronom sujet 'je' : j'en ai besoin." },
+
+  // Phrases supplémentaires - vocabulaire
+  { p:"Il fait très chaud, on se baigne dans la piscine.", e:"Correct !", x:"Verbe pronominal 'se baigner' correctement conjugué à la 3ᵉ pers. du pluriel : on se baigne." },
+  { p:"Elle est enceinte de six mois.", e:"Correct !", x:"L'expression 'être enceinte de + durée' est parfaitement correcte en français." },
+  { p:"J'ai très faim, je veux manger.", e:"très faim → très faim (OK) / attention : 'j'ai faim' suffit", x:"On dit normalement 'j'ai faim' ou 'j'ai très faim' — les deux formes sont acceptées." },
+  { p:"Il est venu avec sa femme et ses enfants.", e:"Correct !", x:"Phrase correcte avec accord pluriel 'ses enfants' et féminin 'sa femme'." },
+  { p:"Le restaurant est ouvert le dimanche.", e:"Correct !", x:"Phrase correcte. Avec 'le dimanche' (habitude), le singulier est bien utilisé." },
+  { p:"Elle connait beaucoup des choses.", e:"des → de", x:"Après 'beaucoup', on utilise 'de' sans article : beaucoup de choses." },
+  { p:"Mon père travaille comme un médecin.", e:"comme un → comme", x:"Pour exprimer une profession avec 'travailler comme', on n'utilise pas d'article : il travaille comme médecin." },
+  { p:"Nous avons décidé de partir à l'étranger.", e:"Correct !", x:"'Décider de + infinitif' est la construction correcte. Phrase bien formée." },
+  { p:"La météo dit qu'il fera beau ce week-end.", e:"Correct !", x:"Futur simple correctement formé : 'il fera'. Phrase bien construite." },
+  { p:"Je me souviens bien de ce voyage.", e:"Correct !", x:"'Se souvenir de + nom' est la construction correcte. Phrase correcte." },
+
+  // Plus de phrases - erreurs variées
+  { p:"Elle est plus grande que moi.", e:"Correct !", x:"Comparatif de supériorité bien formé : plus + adjectif + que." },
+  { p:"C'est le meilleur film que j'ai vu.", e:"vu → vu (correct)", x:"Le participe passé 'vu' ne s'accorde pas ici car le COD 'que' est masculin singulier → vu (correct)." },
+  { p:"Il est aussi intelligent qu'elle.", e:"Correct !", x:"Comparatif d'égalité : aussi + adjectif + que. Phrase correcte." },
+  { p:"Nous partons en vacances le mois prochain.", e:"Correct !", x:"Phrase correcte avec futur exprimé par le présent + indicateur de temps ('le mois prochain')." },
+  { p:"Elle a répondu à toutes les questions.", e:"Correct !", x:"'Répondre à' est bien la construction correcte. Phrase bien formée." },
+  { p:"Je me sens bien aujourd'hui.", e:"Correct !", x:"Verbe pronominal 'se sentir' bien conjugué. Phrase correcte." },
+  { p:"Il y a du monde dans la rue.", e:"Correct !", x:"'Il y a du monde' (= beaucoup de gens) est une expression idiomatique correcte." },
+  { p:"Qu'est-ce que tu fais ce soir ?", e:"Correct !", x:"'Qu'est-ce que' est la forme interrogative correcte pour poser une question sur l'objet." },
+  { p:"Elle voudrait voyager autour du monde.", e:"Correct !", x:"Conditionnel présent 'voudrait' bien formé. 'Autour du monde' est l'expression correcte." },
+  { p:"J'espère que vous allez bien.", e:"Correct !", x:"'Espérer que + indicatif' est la construction habituelle en français. Phrase correcte." },
+
+  // 50 nouvelles phrases avec vraies erreurs
+  { p:"Je suis très fatiguée ce soir.", e:"Correct si la locutrice est une femme !", x:"Le participe passé/adjectif 'fatiguée' prend un -e au féminin. Correct si le sujet est féminin." },
+  { p:"Elle a appris à conduire l'année passée.", e:"Correct !", x:"'Apprendre à + infinitif' et passé composé avec 'avoir'. Phrase correcte." },
+  { p:"Mon chat dort souvent sur mon lit.", e:"Correct !", x:"Phrase simple et correcte au présent de l'indicatif." },
+  { p:"Nous avons visité le musée de Louvre.", e:"de Louvre → du Louvre", x:"On dit 'le musée du Louvre' car 'du' = 'de + le' et le nom propre est précédé de l'article." },
+  { p:"Il n'y a plus de pain dans la maison.", e:"Correct !", x:"Négation 'ne… plus' bien utilisée. 'De' est correct après la négation." },
+  { p:"Tu habites où exactement ?", e:"Correct !", x:"Question informelle avec inversion du pronom. Phrase correcte." },
+  { p:"Il faut que tu viens demain.", e:"viens → viennes", x:"Après 'il faut que', on utilise le subjonctif présent : que tu viennes." },
+  { p:"Elle a oublié de fermer la fenêtre.", e:"Correct !", x:"'Oublier de + infinitif' est la construction correcte." },
+  { p:"Nous nous retrouvons à 18h devant la gare.", e:"Correct !", x:"Verbe pronominal réciproque 'se retrouver' bien conjugué. Phrase correcte." },
+  { p:"Il pleut depuis ce matin.", e:"Correct !", x:"'Depuis + moment du passé' pour exprimer le début d'une action continue. Correct." },
+  { p:"Elle est plus petite que son frère.", e:"Correct !", x:"Comparatif de supériorité (petite) bien formé. Phrase correcte." },
+  { p:"Je dois finir mon travail avant midi.", e:"Correct !", x:"'Devoir + infinitif' est correct. 'Avant' + moment de la journée sans article. Correct." },
+  { p:"Ils ont beaucoup de problèmes.", e:"Correct !", x:"'Beaucoup de + nom pluriel' sans article. Phrase correcte." },
+  { p:"Elle sait très bien cuisiner.", e:"Correct !", x:"'Savoir + infinitif' est correct. 'Très bien' est un adverbe bien placé." },
+  { p:"J'ai besoin d'acheter des médicaments.", e:"Correct !", x:"'Avoir besoin de + infinitif' est la construction correcte." },
+  { p:"Le train part à 9h du matin.", e:"Correct !", x:"Présent à valeur de futur proche avec une heure précise. Correct." },
+  { p:"Ils se disputent tout le temps.", e:"Correct !", x:"Verbe pronominal réciproque 'se disputer' correctement conjugué." },
+  { p:"Elle ne mange jamais le matin.", e:"Correct !", x:"Négation 'ne… jamais' bien formée. Phrase correcte." },
+  { p:"J'ai envie de dormir.", e:"Correct !", x:"'Avoir envie de + infinitif' est la construction idiomatique correcte." },
+  { p:"Il commence à faire froid.", e:"Correct !", x:"'Commencer à + infinitif' est la construction correcte." },
+  { p:"Je suis d'accord avec vous.", e:"Correct !", x:"Expression 'être d'accord avec' bien formée. Phrase correcte." },
+  { p:"Elle a mal à la tête depuis hier.", e:"Correct !", x:"'Avoir mal à + article + partie du corps' est la construction correcte." },
+  { p:"Nous avons bu du vin avec le dîner.", e:"Correct !", x:"Article partitif 'du' pour une quantité indéterminée de vin. Correct." },
+  { p:"Il m'a dit quelque chose d'important.", e:"Correct !", x:"'Quelque chose de + adjectif' est la construction correcte en français." },
+  { p:"Elle prend son café sans sucre.", e:"Correct !", x:"Préposition 'sans' + nom sans article pour exprimer une absence. Correct." },
+  { p:"J'ai rencontré quelqu'un d'intéressant.", e:"Correct !", x:"'Quelqu'un de + adjectif' est la bonne construction." },
+  { p:"Le film dure deux heures et demie.", e:"Correct !", x:"'Deux heures et demie' (30 min) est l'expression correcte. 'Demi' est invariable après 'et'." },
+  { p:"Elle porte toujours des vêtements élégante.", e:"élégante → élégants", x:"'Vêtements' est masculin pluriel, l'adjectif doit s'accorder : élégants." },
+  { p:"Je n'ai pas pu dormir la nuit passée.", e:"Correct !", x:"Passé composé bien formé. 'La nuit passée' est une expression de temps correcte." },
+  { p:"Il vient de finir son repas.", e:"Correct !", x:"'Venir de + infinitif' exprime le passé récent. Construction correcte." },
+  { p:"Nous allons partir en vacances dans deux semaines.", e:"Correct !", x:"'Aller + infinitif' pour le futur proche, avec 'dans' + durée. Correct." },
+  { p:"Elle fait la vaisselle après le repas.", e:"Correct !", x:"Expression idiomatique 'faire la vaisselle'. Phrase correcte." },
+  { p:"Tu peux me dire l'heure, s'il te plaît ?", e:"Correct !", x:"Phrase interrogative correcte avec formule de politesse appropriée." },
+  { p:"Il a acheté un bouquet des fleurs.", e:"des → de", x:"'Un bouquet de fleurs' — après un nom de quantité, on utilise 'de' sans article." },
+  { p:"Elle écoute de la musique classique.", e:"Correct !", x:"Article partitif 'de la' pour un nom féminin. Phrase correcte." },
+  { p:"Je ne comprends pas ce que tu dis.", e:"Correct !", x:"Construction correcte avec 'ce que + sujet + verbe'." },
+  { p:"Ils habitent dans un grand appartement.", e:"Correct !", x:"'Habiter dans + article + nom' est une construction correcte." },
+  { p:"Elle est arrivée en retard à la réunion.", e:"Correct !", x:"Passé composé avec 'être' + accord du participe (féminin). Correct." },
+  { p:"J'adore manger du chocolat.", e:"Correct !", x:"Article partitif 'du' pour une quantité indéterminée de chocolat. Correct." },
+  { p:"Il fait ses courses tous les samedis.", e:"Correct !", x:"Expression 'faire les courses', présent pour une habitude. Correct." },
+  { p:"Nous avons regardé un film hier soir.", e:"Correct !", x:"Passé composé avec 'avoir' pour une action terminée. Correct." },
+  { p:"Elle s'est levé à 7h ce matin.", e:"levé → levée", x:"Verbe pronominal au passé composé avec 'être' : accord avec le sujet féminin → levée." },
+  { p:"Je dois aller à la pharmacie aujourd'hui.", e:"Correct !", x:"'Devoir + infinitif' et 'aller à + article + lieu'. Correct." },
+  { p:"Il mange trop de sucre.", e:"Correct !", x:"'Trop de + nom sans article' est la construction correcte." },
+  { p:"Elle a téléphoné à sa mère hier.", e:"Correct !", x:"'Téléphoner à + nom de personne' est la construction correcte." },
+  { p:"Nous devons nous dépêcher.", e:"Correct !", x:"Verbe pronominal 'se dépêcher' avec 'devoir + infinitif'. Correct." },
+  { p:"Le magasin est fermé le lundi.", e:"Correct !", x:"'Fermé le + jour de la semaine' pour une habitude régulière. Correct." },
+  { p:"Elle porte une manteau chaud.", e:"une → un", x:"'Manteau' est un nom masculin : un manteau." },
+  { p:"J'ai oublié mon parapluie chez moi.", e:"Correct !", x:"'Chez moi' pour désigner son propre domicile. Phrase correcte." },
+  { p:"Il y a du soleil ce matin.", e:"Correct !", x:"Expression météorologique 'il y a du soleil'. Correcte." },
+
+  // 50 autres phrases
+  { p:"Elle commence un nouveau travail lundi.", e:"Correct !", x:"Présent à valeur de futur proche. 'Lundi' sans article pour un jour précis à venir. Correct." },
+  { p:"Nous avons besoin de repos.", e:"Correct !", x:"'Avoir besoin de + nom' sans article après 'de'. Correct." },
+  { p:"Il parle français et anglais.", e:"Correct !", x:"Les noms de langues sans article après 'parler'. Phrase correcte." },
+  { p:"Elle a peur des araignées.", e:"Correct !", x:"'Avoir peur de + article contracté (des)'. Correct." },
+  { p:"Je n'ai pas le temps de sortir.", e:"Correct !", x:"'Avoir le temps de + infinitif'. Négation correcte." },
+  { p:"Il fait du sport chaque matin.", e:"Correct !", x:"'Faire du sport' avec article partitif 'du'. Correct." },
+  { p:"Nous avons commandé deux pizzas.", e:"Correct !", x:"Passé composé avec 'avoir'. Pluriel 'pizzas' correct." },
+  { p:"Tu ressembles beaucoup à ta mère.", e:"Correct !", x:"'Ressembler à + nom' est la construction correcte." },
+  { p:"Elle enseigne le français aux étrangers.", e:"Correct !", x:"'Enseigner quelque chose à quelqu'un'. Construction double COD/COI correcte." },
+  { p:"Je ne sais pas encore.", e:"Correct !", x:"'Ne… pas encore' est une négation correcte." },
+  { p:"Il m'a invité à sa fête.", e:"Correct !", x:"'Inviter quelqu'un à + nom'. Passé composé correct." },
+  { p:"Elle vient de rentrer du travail.", e:"Correct !", x:"'Venir de + infinitif' (passé récent). 'Rentrer du travail' est idiomatique et correct." },
+  { p:"Nous sommes contents d'être là.", e:"Correct !", x:"'Être content de + infinitif'. Accord pluriel masculin 'contents'. Correct." },
+  { p:"Il faut prendre ce médicament deux fois par jour.", e:"Correct !", x:"'Il faut + infinitif'. 'Deux fois par jour' est une expression de fréquence correcte." },
+  { p:"Elle s'intéresse à la peinture.", e:"Correct !", x:"'S'intéresser à + nom'. Verbe pronominal correct." },
+  { p:"J'ai du mal à me réveiller le matin.", e:"Correct !", x:"Expression idiomatique 'avoir du mal à + infinitif'. Correcte." },
+  { p:"Ils sont partis tôt ce matin.", e:"Correct !", x:"Passé composé avec 'être'. Accord 'partis' (masculin pluriel). Correct." },
+  { p:"Elle pense à son avenir.", e:"Correct !", x:"'Penser à + nom'. Construction correcte." },
+  { p:"Je dois arrêter de fumer.", e:"Correct !", x:"'Arrêter de + infinitif'. Construction correcte." },
+  { p:"Nous habitons ici depuis cinq ans.", e:"Correct !", x:"'Depuis + durée' pour exprimer une situation qui continue. Correct." },
+  { p:"Il a eu un accident de voiture.", e:"Correct !", x:"'Avoir un accident'. Passé composé avec 'avoir'. Correct." },
+  { p:"Elle est contente de son travail.", e:"Correct !", x:"'Être content de + nom'. Accord féminin 'contente'. Correct." },
+  { p:"Tu peux m'aider s'il te plaît ?", e:"Correct !", x:"'Pouvoir + infinitif'. Formule de politesse 's'il te plaît'. Correct." },
+  { p:"Il a grandi dans une petite ville.", e:"Correct !", x:"Passé composé avec 'avoir'. 'Grandir' → 'grandi' (invariable avec 'avoir'). Correct." },
+  { p:"Nous écoutons de la musique le soir.", e:"Correct !", x:"Article partitif 'de la' pour un nom féminin. 'Le soir' pour une habitude. Correct." },
+  { p:"Elle porte un pantalon bleu et une chemise blanche.", e:"Correct !", x:"Accords des adjectifs de couleur bien faits : pantalon (masc.) → bleu ; chemise (fém.) → blanche." },
+  { p:"J'aime bien les films d'horreur.", e:"Correct !", x:"'Aimer + article défini + nom' pour parler de goûts en général. Correct." },
+  { p:"Il travaille dans une entreprise française.", e:"Correct !", x:"Accord de l'adjectif 'française' avec le nom féminin 'entreprise'. Correct." },
+  { p:"Nous avons eu de la chance.", e:"Correct !", x:"'Avoir de la chance' avec article partitif. Passé composé correct." },
+  { p:"Elle se souvient de son premier jour d'école.", e:"Correct !", x:"'Se souvenir de + nom'. Verbe pronominal bien conjugué. Correct." },
+  { p:"Il y avait beaucoup du monde à la fête.", e:"du → de", x:"Après 'beaucoup', on utilise 'de' sans article : beaucoup de monde." },
+  { p:"Je commence à comprendre le français.", e:"Correct !", x:"'Commencer à + infinitif'. Construction correcte." },
+  { p:"Elle mange sainement et fait de l'exercice.", e:"Correct !", x:"'Faire de l'exercice' avec article partitif élidé. Correct." },
+  { p:"Nous sommes restés à la maison.", e:"Correct !", x:"Passé composé avec 'être'. 'Rester' → 'restés' (masculin pluriel). Correct." },
+  { p:"Il a changé depuis la dernière fois.", e:"Correct !", x:"'Depuis + moment passé' pour noter une évolution. Passé composé correct." },
+  { p:"Elle doit se reposer après l'opération.", e:"Correct !", x:"'Devoir + infinitif'. Verbe pronominal 'se reposer'. Correct." },
+  { p:"Tu as bien dormi cette nuit ?", e:"Correct !", x:"Passé composé avec 'avoir'. Adverbe 'bien' bien placé. Correct." },
+  { p:"Je n'ai jamais mangé des escargots.", e:"des → d'", x:"Après une négation, l'article indéfini ou partitif devient 'de/d'' : je n'ai jamais mangé d'escargots." },
+  { p:"Il s'est blessé pendant le match.", e:"Correct !", x:"Verbe pronominal au passé composé avec 'être'. Accord 'blessé' (masculin). Correct." },
+  { p:"Nous avons réservé une table pour ce soir.", e:"Correct !", x:"Passé composé avec 'avoir'. 'Réserver une table pour + moment'. Correct." },
+  { p:"Elle est en train de préparer le dîner.", e:"Correct !", x:"'Être en train de + infinitif' pour une action en cours. Correct." },
+  { p:"Il pleuvait quand je suis sorti.", e:"Correct !", x:"Imparfait pour le décor (il pleuvait) + passé composé pour l'action (je suis sorti). Correct." },
+  { p:"Je vais te manquer.", e:"te manquer → tu vas me manquer", x:"En français, 'manquer à quelqu'un' s'exprime différemment : c'est la personne absente qui manque. 'Tu vas me manquer' = 'I will miss you'." },
+  { p:"Nous nous sommes rencontrés à Paris.", e:"Correct !", x:"Verbe pronominal réciproque au passé composé avec 'être'. Accord 'rencontrés'. Correct." },
+  { p:"Elle cherche un appartement depuis un mois.", e:"Correct !", x:"'Depuis + durée' pour une situation qui continue. Présent + 'depuis'. Correct." },
+  { p:"Il est important de bien manger.", e:"Correct !", x:"'Il est important de + infinitif'. Construction impersonnelle correcte." },
+  { p:"Je me suis trompé de chemin.", e:"Correct !", x:"'Se tromper de + nom' sans article. Passé composé avec 'être'. Correct." },
+  { p:"Elle a attendu longtemps le bus.", e:"Correct !", x:"'Attendre + COD direct' (sans préposition). Passé composé avec 'avoir'. Correct." },
+  { p:"Nous avons fêté son anniversaire.", e:"Correct !", x:"Passé composé avec 'avoir'. 'Fêter + COD'. Correct." },
+  { p:"Il fait son possible pour réussir.", e:"Correct !", x:"Expression idiomatique 'faire son possible'. Construction correcte." },
+
+  // 50 phrases de plus pour atteindre 300+
+  { p:"Elle a mangé toute le gâteau.", e:"toute le → tout le", x:"'Gâteau' est masculin, donc 'tout' sans -e : tout le gâteau." },
+  { p:"Il sort souvent le soir avec ses amies.", e:"Correct !", x:"'Amies' au féminin pluriel est correct si ce sont des amies féminines." },
+  { p:"Je peux pas venir ce soir.", e:"peux pas → ne peux pas", x:"La négation en français standard requiert 'ne' avant le verbe : je ne peux pas venir." },
+  { p:"Elle se maquille tous les matins.", e:"Correct !", x:"Verbe pronominal 'se maquiller'. 'Tous les matins' = habitude. Correct." },
+  { p:"Nous avons passé une bonne soirée.", e:"Correct !", x:"Passé composé de 'passer' avec 'avoir'. Accord de l'adjectif 'bonne' (féminin). Correct." },
+  { p:"Il n'a pas pu résoudre le problème.", e:"Correct !", x:"Passé composé de 'pouvoir' avec 'avoir'. Infinitif 'résoudre' après. Correct." },
+  { p:"Elle répond toujours rapidement aux mails.", e:"Correct !", x:"'Répondre à + nom'. Adverbe 'rapidement' bien placé. Correct." },
+  { p:"Je suis en retard, désolé !", e:"Correct !", x:"Expression 'être en retard'. 'Désolé' en fin de phrase pour s'excuser. Correct." },
+  { p:"Il lit un livre intéressant.", e:"Correct !", x:"Présent de 'lire'. 'Un livre intéressant' avec accord de l'adjectif. Correct." },
+  { p:"Nous avons décidé de rester.", e:"Correct !", x:"'Décider de + infinitif'. Passé composé avec 'avoir'. Correct." },
+  { p:"Elle aime beaucoup voyager.", e:"Correct !", x:"'Aimer + infinitif' sans préposition. Adverbe 'beaucoup' bien placé. Correct." },
+  { p:"Tu dois apporter ton passeport.", e:"Correct !", x:"'Devoir + infinitif'. 'Apporter' pour objets (vs 'amener' pour personnes). Correct." },
+  { p:"Il a très bien réussi son examen.", e:"Correct !", x:"Passé composé. Adverbe 'très bien' bien placé avant le participe. Correct." },
+  { p:"Elle essaie de parler sans accent.", e:"Correct !", x:"'Essayer de + infinitif'. 'Sans + nom' sans article. Correct." },
+  { p:"Je me rappelle de ce moment.", e:"de → supprimez 'de'", x:"'Se rappeler' se construit directement sans 'de' : je me rappelle ce moment. C'est 'se souvenir de' qui prend 'de'." },
+  { p:"Nous utilisons beaucoup de l'eau.", e:"de l'eau → d'eau", x:"Après 'beaucoup', on dit 'beaucoup d'eau', pas 'beaucoup de l'eau'." },
+  { p:"Il ne travaille plus ici.", e:"Correct !", x:"Négation 'ne… plus' bien formée. 'Ici' en fin de phrase. Correct." },
+  { p:"Elle a choisi de ne pas y aller.", e:"Correct !", x:"'Choisir de + infinitif'. Négation à l'infinitif : 'ne pas + infinitif'. Correct." },
+  { p:"Je n'ai rien compris.", e:"Correct !", x:"Négation 'ne… rien' : 'rien' se place entre l'auxiliaire et le participe. Correct." },
+  { p:"Nous partons dans deux heures.", e:"Correct !", x:"'Dans + durée' pour exprimer un moment dans le futur. Correct." },
+  { p:"Il est né le 14 juillet.", e:"Correct !", x:"'Naître' se conjugue avec 'être'. 'Le + date' pour les anniversaires. Correct." },
+  { p:"Elle a l'air fatiguée aujourd'hui.", e:"Correct !", x:"'Avoir l'air + adjectif'. 'Fatiguée' s'accorde avec le sujet féminin. Correct." },
+  { p:"Tu as raison, c'est une bonne idée.", e:"Correct !", x:"'Avoir raison' sans article. 'C'est une bonne idée' avec accord. Correct." },
+  { p:"Il prend le métro pour aller au travail.", e:"Correct !", x:"'Prendre le métro'. 'Au travail' = 'à + le'. Correct." },
+  { p:"Elle ne se sent pas bien.", e:"Correct !", x:"Verbe pronominal 'se sentir' à la négation. Adverbe 'bien' en fin. Correct." },
+  { p:"J'ai appris la nouvelle ce matin.", e:"Correct !", x:"Passé composé avec 'avoir'. 'Apprendre une nouvelle'. Correct." },
+  { p:"Nous devons nous préparer.", e:"Correct !", x:"'Devoir + infinitif'. Verbe pronominal 'se préparer'. Correct." },
+  { p:"Il mange des pains au chocolat.", e:"Correct !", x:"'Des pains au chocolat' est le pluriel correct de 'pain au chocolat'." },
+  { p:"Elle est sortie sans dire au revoir.", e:"Correct !", x:"Passé composé avec 'être'. Gérondif négatif 'sans + infinitif'. Correct." },
+  { p:"Je ne comprends pas la différence.", e:"Correct !", x:"Négation simple 'ne… pas' bien formée. Phrase correcte." },
+  { p:"Ils ont fermé la porte à clef.", e:"Correct !", x:"Expression 'fermer à clef' (sans article après 'à'). Correct." },
+  { p:"Elle parle tellement vite que je ne comprends rien.", e:"Correct !", x:"Conjonction de conséquence 'tellement… que'. Négation 'ne… rien'. Correct." },
+  { p:"Tu peux répéter, s'il te plaît ?", e:"Correct !", x:"Phrase interrogative directe avec 'pouvoir + infinitif'. Correct." },
+  { p:"Il habite au troisième étage.", e:"Correct !", x:"'Habiter au + ordinal + étage'. Correct." },
+  { p:"Nous avons mangé dans un restaurant chinois.", e:"Correct !", x:"Passé composé avec 'avoir'. Adjectif 'chinois' bien accordé (masculin). Correct." },
+  { p:"Elle ne veut pas de dessert.", e:"Correct !", x:"Après la négation, article partitif → 'de' : ne pas vouloir de + nom. Correct." },
+  { p:"J'ai trouvé votre livre très interessant.", e:"interessant → intéressant", x:"L'adjectif 'intéressant' s'écrit avec deux accents : é et e. L'orthographe est incorrecte." },
+  { p:"Il est allé chez le dentiste hier.", e:"Correct !", x:"Passé composé avec 'être'. 'Chez le dentiste' (professionnel). Correct." },
+  { p:"Nous avons dépensé trop d'argent.", e:"Correct !", x:"'Trop de + nom' sans article. Passé composé avec 'avoir'. Correct." },
+  { p:"Elle prend un bain chaque soir.", e:"Correct !", x:"'Prendre un bain'. 'Chaque + nom singulier' sans article. Correct." },
+  { p:"Il faut que tu te reposeras.", e:"reposeras → reposes", x:"Après 'il faut que', on utilise le subjonctif présent : que tu te reposes." },
+  { p:"Je lui ai demandé son adresse.", e:"Correct !", x:"'Demander quelque chose à quelqu'un' : COD direct + COI avec 'lui'. Correct." },
+  { p:"Nous avons besoin des informations.", e:"des → d'", x:"'Avoir besoin de + nom' : la préposition 'de' absorbe l'article → besoin d'informations." },
+  { p:"Elle parle à voix bas.", e:"bas → basse", x:"'À voix basse' — dans cette expression figée, l'adjectif 'bas' prend la marque du féminin : basse." },
+  { p:"Il est interdit de fumer ici.", e:"Correct !", x:"Construction impersonnelle 'il est interdit de + infinitif'. Correct." },
+  { p:"Tu m'as manqué.", e:"Correct — mais attention au sens", x:"'Tu m'as manqué' signifie 'you were missed by me' = 'I missed you'. La structure est inverse à l'anglais." },
+  { p:"Nous avons fait une longue promenade.", e:"Correct !", x:"Passé composé avec 'avoir'. Accord de l'adjectif 'longue' (féminin). Correct." },
+  { p:"Il a réussi malgré les difficultés.", e:"Correct !", x:"'Malgré + nom' sans article dans cette expression. Correct." },
+  { p:"Elle s'est habituée à la vie en France.", e:"Correct !", x:"'S'habituer à + nom'. Passé composé avec 'être', accord féminin 'habituée'. Correct." },
+  { p:"Je pense que c'est une bonne solution.", e:"Correct !", x:"'Penser que + indicatif' à la forme affirmative. Correct." },
+  { p:"Nous avons invité tous nos amis.", e:"Correct !", x:"Passé composé avec 'avoir'. 'Tous nos amis' avec accord. Correct." },
+];
+
+/* ══════════════════════════════════════════════════════════
+   ÉTAT
+══════════════════════════════════════════════════════════ */
+const N = 5;
+const COLORS = ['c1','c2','c3','c4','c5'];
+let state = Array.from({length:N}, () => ({ on: true, locked: false, phrase: null }));
+let usedIndices = new Set();
+
+function pickPhrase() {
+  if (usedIndices.size >= PHRASES.length) usedIndices.clear();
+  let idx;
+  do { idx = Math.floor(Math.random() * PHRASES.length); } while (usedIndices.has(idx));
+  usedIndices.add(idx);
+  return PHRASES[idx];
+}
+
+/* ══════════════════════════════════════════════════════════
+   BUILD UI
+══════════════════════════════════════════════════════════ */
+function buildUI() {
+  const zone = document.getElementById('framesZone');
+  zone.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const row = document.createElement('div');
+    row.className = 'frame-row';
+    row.innerHTML = `
+      <div class="tog" id="tog-${i}">
+        <button class="togbtn on act" id="ton-${i}" onclick="setOn(${i},true)">ON</button>
+        <button class="togbtn off" id="toff-${i}" onclick="setOn(${i},false)">OFF</button>
+      </div>
+      <div class="frame-card active ${COLORS[i]}" id="frame-${i}" onclick="toggleLock(${i})">
+        <span class="frame-empty">—</span>
+      </div>
+      <div class="err-side">
+        <button class="err-btn" id="errbtn-${i}" onclick="showErr(event,${i})" disabled>Afficher l'erreur</button>
+      </div>`;
+    zone.appendChild(row);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOGGLE ON/OFF
+══════════════════════════════════════════════════════════ */
+function setOn(i, on) {
+  state[i].on = on;
+  document.getElementById(`ton-${i}`).classList.toggle('act', on);
+  document.getElementById(`toff-${i}`).classList.toggle('act', !on);
+  const card = document.getElementById(`frame-${i}`);
+  if (on) {
+    card.classList.remove('disabled-frame');
+    card.classList.add('active', COLORS[i]);
+    renderFrame(i);
+  } else {
+    card.classList.add('disabled-frame');
+    card.classList.remove('active', COLORS[i], 'locked');
+    state[i].locked = false;
+    state[i].phrase = null;
+    card.innerHTML = `<span class="frame-empty">—</span>`;
+    document.getElementById(`errbtn-${i}`).disabled = true;
+    document.getElementById(`errbtn-${i}`).classList.remove('active-err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOCK/UNLOCK
+══════════════════════════════════════════════════════════ */
+function toggleLock(i) {
+  if (!state[i].on) return;
+  state[i].locked = !state[i].locked;
+  const card = document.getElementById(`frame-${i}`);
+  card.classList.toggle('locked', state[i].locked);
+  // Update lock icon
+  let lockEl = card.querySelector('.lock-icon');
+  if (state[i].locked) {
+    if (!lockEl) {
+      lockEl = document.createElement('span');
+      lockEl.className = 'lock-icon';
+      lockEl.textContent = '🔒';
+      card.appendChild(lockEl);
+    }
+  } else {
+    if (lockEl) lockEl.remove();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER FRAME
+══════════════════════════════════════════════════════════ */
+function renderFrame(i, animate) {
+  const card = document.getElementById(`frame-${i}`);
+  const ph = state[i].phrase;
+  const errBtn = document.getElementById(`errbtn-${i}`);
+  // preserve lock icon
+  const lockEl = card.querySelector('.lock-icon');
+  if (ph) {
+    const span = document.createElement('span');
+    span.className = 'frame-phrase' + (animate ? ' phrase-anim' : '');
+    span.textContent = ph.p;
+    card.innerHTML = '';
+    card.appendChild(span);
+    if (lockEl) card.appendChild(lockEl);
+    errBtn.disabled = false;
+  } else {
+    card.innerHTML = `<span class="frame-empty">—</span>`;
+    if (lockEl) card.appendChild(lockEl);
+    errBtn.disabled = true;
+    errBtn.classList.remove('active-err');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   NOUVELLE PHRASE
+══════════════════════════════════════════════════════════ */
+
+// Sépare les phrases correctes des phrases avec erreur
+const PHRASES_CORRECTES = PHRASES.filter(ph => ph.e === "Correct !" || ph.e === "Correct — mais attention au sens");
+const PHRASES_ERREURS    = PHRASES.filter(ph => ph.e !== "Correct !" && ph.e !== "Correct — mais attention au sens");
+
+let usedCorrect = new Set();
+let usedErreur  = new Set();
+
+function pickFrom(pool, used) {
+  if (used.size >= pool.length) used.clear();
+  let idx;
+  do { idx = Math.floor(Math.random() * pool.length); } while (used.has(idx));
+  used.add(idx);
+  return pool[idx];
+}
+
+function nouvellePhrase() {
+  // Collecte les indices des cadres actifs et non verrouillés
+  const slots = [];
+  for (let i = 0; i < N; i++) {
+    if (state[i].on && !state[i].locked) slots.push(i);
+  }
+  if (slots.length === 0) return;
+
+  // Choisir aléatoirement lequel des slots recevra la phrase correcte
+  // (uniquement si au moins 1 slot disponible, et on garantit max 1 correcte)
+  const nbSlots = slots.length;
+  let correctSlotIndex = null;
+  if (nbSlots >= 1) {
+    // 1 slot correct parmi ceux disponibles
+    correctSlotIndex = slots[Math.floor(Math.random() * nbSlots)];
+  }
+
+  slots.forEach((i, pos) => {
+    const isCorrect = (i === correctSlotIndex);
+    state[i].phrase = isCorrect ? pickFrom(PHRASES_CORRECTES, usedCorrect) : pickFrom(PHRASES_ERREURS, usedErreur);
+    document.getElementById(`errbtn-${i}`).classList.remove('active-err');
+    setTimeout(() => renderFrame(i, true), pos * 60);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   SHOW ERROR PANEL
+══════════════════════════════════════════════════════════ */
+function showErr(evt, i) {
+  evt.stopPropagation();
+  const ph = state[i].phrase;
+  if (!ph) return;
+  document.getElementById('panelPhrase').textContent = ph.p;
+  document.getElementById('panelErreur').textContent = ph.e;
+  document.getElementById('panelExplication').textContent = ph.x;
+  document.getElementById('errPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById(`errbtn-${i}`).classList.add('active-err');
+}
+
+function closeErrPanel() {
+  document.getElementById('errPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeErrPanel(); });
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+buildUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadres Interactifs</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════
+   TOKENS
+════════════════════════════ */
+:root {
+  --parchment: #ede5cf;
+  --paper:     #faf4e4;
+  --ink:       #241a0c;
+  --ink-mid:   #58482e;
+  --ink-dim:   #9a8660;
+  --ink-ghost: #c8a878;
+  --terra:     #b85030;
+  --sage:      #6c9e56;
+  --sage-dk:   #4c7838;
+  --blush:     #c88878;
+  --lav:       #9a90c8;
+  --butter:    #c8b038;
+
+  --frame-1: #e8d4b8; --frame-1-tx: #3a2010;
+  --frame-2: #b8d4b0; --frame-2-tx: #0e3018;
+  --frame-3: #b8b0d8; --frame-3-tx: #1e1448;
+  --frame-4: #d8cc8a; --frame-4-tx: #2e2400;
+  --frame-5: #a8ccd8; --frame-5-tx: #082030;
+  --frame-6: #d8b0c0; --frame-6-tx: #3a0e1e;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--parchment);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--ink);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23n)' opacity='0.065'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(36,26,12,.10) 100%);
+  pointer-events: none; z-index: 900;
+}
+/* Outer border */
+body::after {
+  content: '';
+  position: fixed; inset: 7px;
+  border: 1.5px solid rgba(184,80,48,.2);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 4px rgba(184,80,48,.04);
+  pointer-events: none; z-index: 901;
+}
+
+/* Corner ornaments */
+.orn { position:fixed; pointer-events:none; z-index:902; opacity:.2; width:46px; height:46px; }
+.orn.tl { top:9px;    left:9px; }
+.orn.tr { top:9px;    right:9px;  transform:scaleX(-1); }
+.orn.bl { bottom:9px; left:9px;   transform:scaleY(-1); }
+.orn.br { bottom:9px; right:9px;  transform:scale(-1); }
+
+/* ════════════════════════════
+   HEADER
+════════════════════════════ */
+.header {
+  text-align: center;
+  padding: 10px 60px 10px;
+  flex-shrink: 0;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3.2vw, 44px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.01em;
+  display: inline-flex; align-items: baseline; gap: .22em;
+}
+h1 .les   { font-style:italic; font-weight:400; color:var(--ink-mid); font-size:.8em; }
+h1 .cadres { color:var(--terra); }
+h1 .lib   { color:var(--ink); }
+
+.orn-rule {
+  display:flex; align-items:center; gap:10px;
+  margin:3px auto 0; padding:0 80px;
+}
+.orn-line { flex:1; height:1px; background:linear-gradient(to right, transparent, rgba(184,80,48,.35), transparent); }
+.orn-c { font-family:'Playfair Display',serif; font-size:10px; color:var(--terra); opacity:.5; letter-spacing:.2em; }
+
+/* ════════════════════════════
+   CANVAS — draggable area
+════════════════════════════ */
+#canvas {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ════════════════════════════
+   FRAMES
+════════════════════════════ */
+.frame {
+  position: absolute;
+  border-radius: 10px;
+  border: 2px solid rgba(184,80,48,.22);
+  box-shadow:
+    0 2px 16px rgba(36,26,12,.10),
+    0 6px 32px rgba(36,26,12,.07),
+    inset 0 0 0 5px rgba(255,255,255,.22);
+  cursor: grab;
+  overflow: hidden;
+  resize: both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: box-shadow .2s, border-color .2s;
+}
+
+.frame:active { cursor: grabbing; }
+
+.frame.active {
+  box-shadow:
+    0 6px 32px rgba(184,80,48,.22),
+    0 10px 48px rgba(36,26,12,.14),
+    inset 0 0 0 5px rgba(255,255,255,.3);
+  border-color: rgba(184,80,48,.48);
+  z-index: 100;
+}
+
+/* Inner subtle decoration */
+.frame::before {
+  content: '';
+  position: absolute; inset: 8px;
+  border: 1px solid rgba(184,80,48,.10);
+  border-radius: 6px;
+  pointer-events: none;
+}
+.frame::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Textarea inside each frame */
+.frame textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(28px, 5vw, 72px);
+  line-height: 1.15;
+  text-align: center;
+  padding: 16px;
+  cursor: text;
+  z-index: 2;
+  color: inherit;
+  caret-color: var(--terra);
+  word-break: break-word;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frame textarea::placeholder {
+  color: rgba(36,26,12,.18);
+  font-style: italic;
+  font-weight: 400;
+  font-size: .55em;
+}
+
+/* Close button */
+.frame .close-btn {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(184,80,48,.18);
+  border: 1px solid rgba(184,80,48,.3);
+  color: var(--terra);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity .18s, background .18s, transform .15s;
+  z-index: 15;
+  font-family: sans-serif;
+  font-weight: 700;
+  padding: 0;
+}
+.frame:hover .close-btn { opacity: 1; }
+.frame .close-btn:hover { background: rgba(184,80,48,.55); transform: scale(1.15); opacity: 1; }
+
+/* Resize handles — all 4 corners */
+.frame .rh {
+  position: absolute;
+  width: 18px; height: 18px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity .18s;
+  display: flex; align-items: center; justify-content: center;
+}
+.frame:hover .rh { opacity: .55; }
+.frame .rh:hover { opacity: 1 !important; }
+.frame .rh svg { width: 9px; height: 9px; }
+
+.frame .rh-se { bottom: 2px; right: 2px; cursor: se-resize; }
+.frame .rh-sw { bottom: 2px; left:  2px; cursor: sw-resize; transform: scaleX(-1); }
+.frame .rh-ne { top:    2px; right: 2px; cursor: ne-resize; transform: scaleY(-1); }
+.frame .rh-nw { top:    2px; left:  2px; cursor: nw-resize; transform: scale(-1); }
+
+/* Color variants for frames */
+.frame-c0 { background: var(--frame-1); color: var(--frame-1-tx); }
+.frame-c1 { background: var(--frame-2); color: var(--frame-2-tx); }
+.frame-c2 { background: var(--frame-3); color: var(--frame-3-tx); }
+.frame-c3 { background: var(--frame-4); color: var(--frame-4-tx); }
+.frame-c4 { background: var(--frame-5); color: var(--frame-5-tx); }
+.frame-c5 { background: var(--frame-6); color: var(--frame-6-tx); }
+
+/* Animation for frame entry */
+@keyframes frameIn {
+  from { opacity:0; transform:scale(.82) translateY(12px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+.frame.entering { animation: frameIn .38s cubic-bezier(.34,1.36,.64,1) both; }
+
+/* ════════════════════════════
+   BOTTOM BAR
+════════════════════════════ */
+.bottom-bar {
+  padding: 6px 18px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255,255,255,.38);
+  border: 1.5px solid rgba(184,80,48,.2);
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(36,26,12,.06);
+}
+
+.ctrl-btn {
+  padding: 8px 18px;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink-mid);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+  line-height: 1;
+}
+.ctrl-btn:hover { background: rgba(184,80,48,.12); color: var(--terra); }
+.ctrl-btn:active { background: rgba(184,80,48,.22); }
+
+.ctrl-sep {
+  width: 1px;
+  height: 26px;
+  background: rgba(184,80,48,.2);
+  flex-shrink: 0;
+}
+
+.count-input {
+  width: 52px;
+  padding: 7px 0;
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.count-input::-webkit-outer-spin-button,
+.count-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.ctrl-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-dim);
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+
+/* ════════════════════════════
+   BACK BUTTON (same as ref)
+════════════════════════════ */
+#btn-back {
+  position: fixed; bottom: 14px; left: 18px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: .67rem; font-style: italic; letter-spacing: .06em;
+  color: var(--ink-dim);
+  background: none; border: 1px solid rgba(61,50,40,.2);
+  border-radius: 3px; padding: .32rem .72rem;
+  cursor: pointer; opacity: .6;
+  transition: opacity .2s, background .2s;
+  text-decoration: none; display: inline-block;
+  z-index: 950;
+}
+#btn-back:hover { opacity: 1; background: rgba(232,220,200,.7); }
+</style>
+</head>
+<body>
+
+<!-- Corners -->
+<svg class="orn tl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn tr" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn bl" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+<svg class="orn br" viewBox="0 0 46 46" fill="none"><path d="M5 5L5 21M5 5L21 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5Q13 9 17 17" stroke="#b85030" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="5" r="2.2" fill="#b85030"/><path d="M11 5L11 8M5 11L8 11" stroke="#b85030" stroke-width=".9" stroke-linecap="round" opacity=".55"/><path d="M16 5L16 7M5 16L7 16" stroke="#b85030" stroke-width=".7" stroke-linecap="round" opacity=".3"/></svg>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>
+    <span class="les">Les</span>
+    <span class="cadres">Cadres</span>
+    <span class="lib">Libres</span>
+  </h1>
+  <div class="orn-rule">
+    <div class="orn-line"></div>
+    <span class="orn-c">— ✦ tableau interactif ✦ —</span>
+    <div class="orn-line"></div>
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div id="canvas"></div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <span class="ctrl-label">Cadres :</span>
+  <div class="ctrl-group">
+    <button class="ctrl-btn" id="btn-minus" title="Moins">−</button>
+    <div class="ctrl-sep"></div>
+    <input class="count-input" id="count-input" type="number" min="0" max="20" value="0" />
+    <div class="ctrl-sep"></div>
+    <button class="ctrl-btn" id="btn-plus" title="Plus">+</button>
+  </div>
+</div>
+
+<!-- BACK BUTTON -->
+<a href="index.html" id="btn-back">← Retour aux jeux</a>
+
+<script>
+const canvas = document.getElementById('canvas');
+const countInput = document.getElementById('count-input');
+const btnPlus = document.getElementById('btn-plus');
+const btnMinus = document.getElementById('btn-minus');
+
+let frames = [];       // array of frame DOM elements
+let targetCount = 0;
+
+/* ─── color cycling ─── */
+const COLORS = 6;
+let colorIdx = 0;
+function nextColor() {
+  const c = colorIdx % COLORS;
+  colorIdx++;
+  return c;
+}
+
+/* ─── layout helper: place a new frame in a tiled position ─── */
+function computePosition(index) {
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  const cols = Math.ceil(Math.sqrt(targetCount)) || 1;
+  const rows = Math.ceil(targetCount / cols);
+  const pad = 16;
+  const w = Math.floor((cw - pad * (cols + 1)) / cols);
+  const h = Math.floor((ch - pad * (rows + 1)) / rows);
+  const col = index % cols;
+  const row = Math.floor(index / cols);
+  return {
+    x: pad + col * (w + pad),
+    y: pad + row * (h + pad),
+    w: Math.max(w, 120),
+    h: Math.max(h, 80)
+  };
+}
+
+/* ─── create one frame ─── */
+function createFrame(index, animated = true) {
+  const pos = computePosition(index);
+  const c = nextColor();
+
+  const el = document.createElement('div');
+  el.className = `frame frame-c${c}${animated ? ' entering' : ''}`;
+  el.style.left   = pos.x + 'px';
+  el.style.top    = pos.y + 'px';
+  el.style.width  = pos.w + 'px';
+  el.style.height = pos.h + 'px';
+
+  // Textarea
+  const ta = document.createElement('textarea');
+  ta.placeholder = 'Écrivez ici…';
+  el.appendChild(ta);
+
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'close-btn';
+  closeBtn.innerHTML = '×';
+  closeBtn.title = 'Fermer';
+  closeBtn.addEventListener('mousedown', e => e.stopPropagation());
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    el.style.transition = 'opacity .22s, transform .22s';
+    el.style.opacity = '0';
+    el.style.transform = 'scale(.85)';
+    setTimeout(() => {
+      el.remove();
+      frames = frames.filter(f => f !== el);
+      targetCount = frames.length;
+      countInput.value = targetCount;
+    }, 220);
+  });
+  el.appendChild(closeBtn);
+
+  // Resize handle SVG snippet
+  const rhSvg = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="10" x2="10" y2="3"/><line x1="6.5" y1="10" x2="10" y2="6.5"/></svg>`;
+  const corners = [
+    { cls: 'rh-se', dir: 'se' },
+    { cls: 'rh-sw', dir: 'sw' },
+    { cls: 'rh-ne', dir: 'ne' },
+    { cls: 'rh-nw', dir: 'nw' },
+  ];
+  const handles = {};
+  corners.forEach(({ cls, dir }) => {
+    const h = document.createElement('div');
+    h.className = `rh ${cls}`;
+    h.innerHTML = rhSvg;
+    el.appendChild(h);
+    handles[dir] = h;
+  });
+
+  // Remove animation class after it ends
+  if (animated) {
+    el.addEventListener('animationend', () => el.classList.remove('entering'), { once: true });
+  }
+
+  makeDraggable(el, ta, handles);
+  makeResizable(el, handles);
+
+  canvas.appendChild(el);
+  return el;
+}
+
+/* ─── drag logic ─── */
+function makeDraggable(el, textarea) {
+  let dragging = false;
+  let startX, startY, origLeft, origTop;
+
+  el.addEventListener('mousedown', (e) => {
+    // Don't drag if clicking textarea, close button, or resize handle
+    if (e.target === textarea || e.target.closest('.rh') || e.target.closest('.close-btn')) return;
+
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = el.getBoundingClientRect();
+    const cr = canvas.getBoundingClientRect();
+    origLeft = rect.left - cr.left;
+    origTop  = rect.top  - cr.top;
+
+    el.classList.add('active');
+    // Raise z-index
+    el.style.zIndex = 50;
+
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const cr = canvas.getBoundingClientRect();
+    const newLeft = Math.max(0, Math.min(origLeft + dx, cr.width  - el.offsetWidth));
+    const newTop  = Math.max(0, Math.min(origTop  + dy, cr.height - el.offsetHeight));
+    el.style.left = newLeft + 'px';
+    el.style.top  = newTop  + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('active');
+    el.style.zIndex = '';
+  });
+}
+
+/* ─── resize logic (drag from any corner) ─── */
+function makeResizable(el, handles) {
+  const dirs = ['se','sw','ne','nw'];
+  dirs.forEach(dir => {
+    const handle = handles[dir];
+    let resizing = false;
+    let startX, startY, startW, startH, startLeft, startTop;
+
+    handle.addEventListener('mousedown', (e) => {
+      resizing = true;
+      startX    = e.clientX;
+      startY    = e.clientY;
+      startW    = el.offsetWidth;
+      startH    = el.offsetHeight;
+      startLeft = parseInt(el.style.left, 10) || 0;
+      startTop  = parseInt(el.style.top,  10) || 0;
+      el.classList.add('active');
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!resizing) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const minW = 40, minH = 30;
+
+      if (dir === 'se') {
+        el.style.width  = Math.max(minW, startW + dx) + 'px';
+        el.style.height = Math.max(minH, startH + dy) + 'px';
+      } else if (dir === 'sw') {
+        const newW = Math.max(minW, startW - dx);
+        el.style.width  = newW + 'px';
+        el.style.left   = (startLeft + startW - newW) + 'px';
+        el.style.height = Math.max(minH, startH + dy) + 'px';
+      } else if (dir === 'ne') {
+        el.style.width  = Math.max(minW, startW + dx) + 'px';
+        const newH = Math.max(minH, startH - dy);
+        el.style.height = newH + 'px';
+        el.style.top    = (startTop + startH - newH) + 'px';
+      } else if (dir === 'nw') {
+        const newW = Math.max(minW, startW - dx);
+        const newH = Math.max(minH, startH - dy);
+        el.style.width  = newW + 'px';
+        el.style.left   = (startLeft + startW - newW) + 'px';
+        el.style.height = newH + 'px';
+        el.style.top    = (startTop + startH - newH) + 'px';
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!resizing) return;
+      resizing = false;
+      el.classList.remove('active');
+    });
+  });
+}
+
+/* ─── sync frames to target count ─── */
+function syncFrames() {
+  const current = frames.length;
+  const target  = targetCount;
+
+  if (target > current) {
+    // add frames
+    for (let i = current; i < target; i++) {
+      const f = createFrame(i, true);
+      frames.push(f);
+    }
+  } else if (target < current) {
+    // remove frames from end
+    for (let i = current - 1; i >= target; i--) {
+      frames[i].remove();
+      frames.pop();
+    }
+    colorIdx = target; // reset color counter
+  }
+}
+
+/* ─── redistribute layout (just for newly added frames; existing ones keep position) ─── */
+// On first creation, we use computePosition which tiles correctly.
+
+/* ─── controls ─── */
+btnPlus.addEventListener('click', () => {
+  if (targetCount >= 20) return;
+  targetCount++;
+  countInput.value = targetCount;
+  syncFrames();
+});
+
+btnMinus.addEventListener('click', () => {
+  if (targetCount <= 0) return;
+  targetCount--;
+  countInput.value = targetCount;
+  syncFrames();
+});
+
+countInput.addEventListener('change', () => {
+  let v = parseInt(countInput.value, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  if (v > 20) v = 20;
+  countInput.value = v;
+  targetCount = v;
+  colorIdx = 0; // reset colors
+  // Remove all frames and recreate
+  frames.forEach(f => f.remove());
+  frames = [];
+  syncFrames();
+});
+
+countInput.addEventListener('input', () => {
+  let v = parseInt(countInput.value, 10);
+  if (!isNaN(v) && v >= 0 && v <= 20) {
+    targetCount = v;
+    colorIdx = 0;
+    frames.forEach(f => f.remove());
+    frames = [];
+    syncFrames();
+  }
+});
+</script>
+</body>
+</html>
