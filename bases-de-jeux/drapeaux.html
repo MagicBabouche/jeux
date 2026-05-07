@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Quiz sur les drapeaux du monde — Europe, Asie, Afrique, Amérique." />
+  <meta name="theme-color" content="#f5efe6" />
+  <title>Drapeaux du Monde</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream:         #f5efe6;
+      --parchment:     #e8dcc8;
+      --terracotta:    #c4896a;
+      --ink:           #3d3228;
+      --faded-ink:     #7a6a5a;
+      --europe-color:  #8a9bb5;
+      --asie-color:    #c4896a;
+      --afrique-color: #a8b89a;
+      --amerique-color:#b89aaa;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      background-color: var(--cream);
+      background-image:
+        radial-gradient(ellipse at 15% 30%, rgba(212,165,165,0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 70%, rgba(138,155,181,0.16) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      font-family: 'Lora', Georgia, serif;
+      color: var(--ink);
+    }
+
+    /* ══════════════════════════════
+       LEFT COLUMN — flag
+    ══════════════════════════════ */
+    .col-flag {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5vmin;
+      position: relative;
+    }
+
+    /* Frame that keeps 3:2 ratio and fills available space */
+    .flag-frame {
+      position: relative;
+      /* Fill the column while respecting 3:2 ratio */
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flag-frame-inner {
+      position: relative;
+      /* Use CSS to constrain to 3:2 within the available box */
+      max-width: 100%;
+      max-height: 100%;
+      /* Trick: the image itself will define the size via object-fit */
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #flagImg {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: sepia(8%) brightness(.97);
+      opacity: 0;
+      transform: scale(.95);
+      transition: opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+      border-radius: 2px;
+      box-shadow:
+        0 0 0 6px var(--cream),
+        0 0 0 8px rgba(61,50,40,.1),
+        0 8px 40px rgba(61,50,40,.18);
+    }
+    #flagImg.visible { opacity: 1; transform: scale(1); }
+
+    /* Decorative corners on the flag */
+    .flag-corner {
+      position: absolute;
+      width: 18px; height: 18px;
+      border-color: var(--terracotta);
+      border-style: solid;
+      opacity: .35;
+      pointer-events: none;
+      z-index: 2;
+    }
+    /* These are positioned relative to the inner container */
+    .flag-corner.tl { top: 0; left: 0;   border-width: 2px 0 0 2px; }
+    .flag-corner.tr { top: 0; right: 0;  border-width: 2px 2px 0 0; }
+    .flag-corner.bl { bottom: 0; left: 0;  border-width: 0 0 2px 2px; }
+    .flag-corner.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+    #placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(.85rem, 1.5vw, 1.1rem);
+      font-style: italic;
+      color: var(--faded-ink);
+      opacity: .45;
+      text-align: center;
+      line-height: 1.7;
+      letter-spacing: .04em;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+    #placeholder.hidden { opacity: 0; }
+
+    #loader {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px; height: 32px;
+      border: 2.5px solid rgba(61,50,40,.1);
+      border-top-color: var(--terracotta);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      opacity: 0; transition: opacity .2s;
+      z-index: 3;
+    }
+    #loader.active { opacity: .55; }
+    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    /* Vertical separator */
+    .sep-line {
+      width: 1px;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        rgba(61,50,40,.15) 20%,
+        rgba(61,50,40,.15) 80%,
+        transparent 100%);
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       RIGHT COLUMN — controls
+    ══════════════════════════════ */
+    .col-controls {
+      width: clamp(240px, 28vw, 340px);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      padding: 2rem 1.5rem 3.5rem;
+      gap: 0;
+    }
+
+    /* Header */
+    header { text-align: center; }
+    header .ornament {
+      font-size: .75rem;
+      letter-spacing: .3em;
+      color: var(--terracotta);
+      opacity: .6;
+      display: block;
+      margin-bottom: .2rem;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.1rem, 2vw, 1.6rem);
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--ink);
+      line-height: 1.15;
+    }
+    header h1 em { color: var(--terracotta); font-style: italic; }
+    header .subtitle {
+      margin-top: .2rem;
+      font-size: .7rem;
+      color: var(--faded-ink);
+      font-style: italic;
+      letter-spacing: .06em;
+    }
+    .hdivider {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      justify-content: center;
+      margin: .3rem auto 0;
+      color: var(--terracotta);
+      opacity: .35;
+      font-size: .8rem;
+    }
+    .hdivider::before, .hdivider::after {
+      content: ''; display: block;
+      width: 28px; height: 1px;
+      background: var(--terracotta); opacity: .5;
+    }
+
+    /* Country name */
+    .country-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(.95rem, 1.8vw, 1.35rem);
+      font-style: italic;
+      color: var(--ink);
+      letter-spacing: .03em;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .4s ease, transform .4s ease;
+      text-align: center;
+      min-height: 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .country-name.visible { opacity: 1; transform: translateY(0); }
+
+    /* Buttons */
+    .btn-col {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+      width: 100%;
+    }
+    .btn {
+      font-family: 'Playfair Display', serif;
+      font-size: .8rem;
+      letter-spacing: .07em;
+      padding: .6rem 1rem;
+      border-radius: 3px;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      width: 100%;
+      transition: background .22s, transform .14s, box-shadow .22s;
+      position: relative; overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.22) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .btn:active { transform: scale(.98); }
+
+    .btn-primary {
+      background: var(--terracotta);
+      color: var(--cream);
+      border-color: rgba(100,50,30,.2);
+      box-shadow: 0 2px 10px rgba(196,137,106,.28);
+    }
+    .btn-primary:hover { background: #b87a5e; }
+    .btn-primary:disabled { opacity: .42; cursor: default; pointer-events: none; }
+
+    .btn-reveal {
+      background: var(--parchment);
+      color: var(--ink);
+      border-color: rgba(61,50,40,.2);
+      box-shadow: 0 2px 6px rgba(61,50,40,.08);
+    }
+    .btn-reveal:hover { background: #ddd0b8; }
+    .btn-reveal:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+    /* Continent toggles */
+    .filter-wrap { width: 100%; }
+    .filter-label {
+      font-family: 'Playfair Display', serif;
+      font-size: .62rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--faded-ink);
+      opacity: .6;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      margin-bottom: .55rem;
+      justify-content: center;
+    }
+    .filter-label::before, .filter-label::after {
+      content: ''; display: block;
+      width: 18px; height: 1px;
+      background: var(--faded-ink); opacity: .4;
+    }
+
+    .continent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem .6rem;
+    }
+
+    .toggle-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .25rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .card-label {
+      font-family: 'Playfair Display', serif;
+      font-size: .72rem;
+      letter-spacing: .05em;
+      color: var(--faded-ink);
+      transition: color .2s;
+    }
+
+    .pill {
+      width: 62px; height: 25px;
+      border-radius: 13px;
+      border: 1.5px solid rgba(61,50,40,.18);
+      background: var(--parchment);
+      position: relative;
+      transition: background .28s, border-color .28s;
+      box-shadow: inset 0 1px 2px rgba(61,50,40,.08);
+    }
+    .pill::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 3px;
+      transform: translateY(-50%);
+      width: 17px; height: 17px;
+      border-radius: 50%;
+      background: var(--cream);
+      box-shadow: 0 1px 3px rgba(61,50,40,.18);
+      transition: left .28s cubic-bezier(.4,0,.2,1);
+    }
+    .pill .pill-text {
+      position: absolute;
+      right: 5px; top: 50%;
+      transform: translateY(-50%);
+      font-size: .5rem;
+      letter-spacing: .05em;
+      color: var(--faded-ink);
+      font-family: 'Lora', serif;
+    }
+
+    .toggle-card.active .pill { border-color: transparent; }
+    .toggle-card.active .pill::before { left: calc(100% - 20px); background: white; }
+    .toggle-card.active .pill .pill-text { right: auto; left: 5px; color: rgba(255,255,255,.9); }
+    .toggle-card.active .card-label { color: var(--ink); font-weight: 700; }
+
+    .toggle-card[data-region="Europe"].active .pill   { background: var(--europe-color); }
+    .toggle-card[data-region="Asie"].active .pill     { background: var(--asie-color); }
+    .toggle-card[data-region="Afrique"].active .pill  { background: var(--afrique-color); }
+    .toggle-card[data-region="Amérique"].active .pill { background: var(--amerique-color); }
+
+    .toast {
+      font-size: .68rem;
+      font-style: italic;
+      color: var(--terracotta);
+      opacity: 0;
+      transition: opacity .3s;
+      min-height: .9em;
+      text-align: center;
+    }
+    .toast.visible { opacity: 1; }
+
+    footer {
+      font-size: .62rem;
+      color: var(--faded-ink);
+      opacity: .4;
+      letter-spacing: .06em;
+      text-align: center;
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+
+    #btn-back {
+      position: fixed; bottom: 16px; left: 18px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: .67rem; font-style: italic; letter-spacing: .06em;
+      color: var(--faded-ink);
+      background: none; border: 1px solid rgba(61,50,40,.2);
+      border-radius: 3px; padding: .32rem .72rem;
+      cursor: pointer; opacity: .6;
+      transition: opacity .2s, background .2s;
+      text-decoration: none; display: inline-block;
+      z-index: 10;
+    }
+    #btn-back:hover { opacity: 1; background: var(--parchment); }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT: flag -->
+  <div class="col-flag">
+    <div class="flag-frame">
+      <div class="flag-frame-inner">
+        <div class="flag-corner tl"></div>
+        <div class="flag-corner tr"></div>
+        <div class="flag-corner bl"></div>
+        <div class="flag-corner br"></div>
+        <img id="flagImg" src="" alt="Drapeau" />
+        <div id="placeholder">Activez un continent,<br>puis cliquez sur<br>« Nouveau drapeau »…</div>
+        <div id="loader"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep-line"></div>
+
+  <!-- RIGHT: controls -->
+  <div class="col-controls">
+
+    <header>
+      <span class="ornament">✦ &nbsp; ✦ &nbsp; ✦</span>
+      <h1>Drapeaux<br>du <em>Monde</em></h1>
+      <p class="subtitle">Une promenade illustrée<br>parmi les nations</p>
+      <div class="hdivider">❧</div>
+    </header>
+
+    <div class="country-name" id="countryName"></div>
+
+    <div class="btn-col">
+      <button class="btn btn-primary" id="btnNew">✦ &nbsp; Nouveau drapeau</button>
+      <button class="btn btn-reveal"  id="btnReveal" disabled>Afficher le nom</button>
+    </div>
+
+    <div class="filter-wrap">
+      <div class="filter-label">Continents</div>
+      <div class="continent-grid">
+        <div class="toggle-card active" data-region="Europe" tabindex="0" role="checkbox" aria-checked="true">
+          <span class="card-label">Europe</span>
+          <div class="pill"><span class="pill-text">on</span></div>
+        </div>
+        <div class="toggle-card" data-region="Asie" tabindex="0" role="checkbox" aria-checked="false">
+          <span class="card-label">Asie</span>
+          <div class="pill"><span class="pill-text">off</span></div>
+        </div>
+        <div class="toggle-card" data-region="Afrique" tabindex="0" role="checkbox" aria-checked="false">
+          <span class="card-label">Afrique</span>
+          <div class="pill"><span class="pill-text">off</span></div>
+        </div>
+        <div class="toggle-card" data-region="Amérique" tabindex="0" role="checkbox" aria-checked="false">
+          <span class="card-label">Amérique</span>
+          <div class="pill"><span class="pill-text">off</span></div>
+        </div>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <footer>© Drapeaux du Monde<br>Données : restcountries.com</footer>
+
+  </div>
+
+<script>
+  // ── Données embarquées (183 pays) ──────────────────────────────────────
+  const COUNTRIES = [{"name":"Albanie","cca2":"al","region":"Europe","flag":"https://flagcdn.com/al.svg"},{"name":"Andorre","cca2":"ad","region":"Europe","flag":"https://flagcdn.com/ad.svg"},{"name":"Autriche","cca2":"at","region":"Europe","flag":"https://flagcdn.com/at.svg"},{"name":"Biélorussie","cca2":"by","region":"Europe","flag":"https://flagcdn.com/by.svg"},{"name":"Belgique","cca2":"be","region":"Europe","flag":"https://flagcdn.com/be.svg"},{"name":"Bosnie-Herzégovine","cca2":"ba","region":"Europe","flag":"https://flagcdn.com/ba.svg"},{"name":"Bulgarie","cca2":"bg","region":"Europe","flag":"https://flagcdn.com/bg.svg"},{"name":"Croatie","cca2":"hr","region":"Europe","flag":"https://flagcdn.com/hr.svg"},{"name":"Chypre","cca2":"cy","region":"Europe","flag":"https://flagcdn.com/cy.svg"},{"name":"République tchèque","cca2":"cz","region":"Europe","flag":"https://flagcdn.com/cz.svg"},{"name":"Danemark","cca2":"dk","region":"Europe","flag":"https://flagcdn.com/dk.svg"},{"name":"Estonie","cca2":"ee","region":"Europe","flag":"https://flagcdn.com/ee.svg"},{"name":"Finlande","cca2":"fi","region":"Europe","flag":"https://flagcdn.com/fi.svg"},{"name":"France","cca2":"fr","region":"Europe","flag":"https://flagcdn.com/fr.svg"},{"name":"Géorgie","cca2":"ge","region":"Europe","flag":"https://flagcdn.com/ge.svg"},{"name":"Allemagne","cca2":"de","region":"Europe","flag":"https://flagcdn.com/de.svg"},{"name":"Grèce","cca2":"gr","region":"Europe","flag":"https://flagcdn.com/gr.svg"},{"name":"Hongrie","cca2":"hu","region":"Europe","flag":"https://flagcdn.com/hu.svg"},{"name":"Islande","cca2":"is","region":"Europe","flag":"https://flagcdn.com/is.svg"},{"name":"Irlande","cca2":"ie","region":"Europe","flag":"https://flagcdn.com/ie.svg"},{"name":"Italie","cca2":"it","region":"Europe","flag":"https://flagcdn.com/it.svg"},{"name":"Kosovo","cca2":"xk","region":"Europe","flag":"https://flagcdn.com/xk.svg"},{"name":"Lettonie","cca2":"lv","region":"Europe","flag":"https://flagcdn.com/lv.svg"},{"name":"Liechtenstein","cca2":"li","region":"Europe","flag":"https://flagcdn.com/li.svg"},{"name":"Lituanie","cca2":"lt","region":"Europe","flag":"https://flagcdn.com/lt.svg"},{"name":"Luxembourg","cca2":"lu","region":"Europe","flag":"https://flagcdn.com/lu.svg"},{"name":"Malte","cca2":"mt","region":"Europe","flag":"https://flagcdn.com/mt.svg"},{"name":"Moldavie","cca2":"md","region":"Europe","flag":"https://flagcdn.com/md.svg"},{"name":"Monaco","cca2":"mc","region":"Europe","flag":"https://flagcdn.com/mc.svg"},{"name":"Monténégro","cca2":"me","region":"Europe","flag":"https://flagcdn.com/me.svg"},{"name":"Pays-Bas","cca2":"nl","region":"Europe","flag":"https://flagcdn.com/nl.svg"},{"name":"Macédoine du Nord","cca2":"mk","region":"Europe","flag":"https://flagcdn.com/mk.svg"},{"name":"Norvège","cca2":"no","region":"Europe","flag":"https://flagcdn.com/no.svg"},{"name":"Pologne","cca2":"pl","region":"Europe","flag":"https://flagcdn.com/pl.svg"},{"name":"Portugal","cca2":"pt","region":"Europe","flag":"https://flagcdn.com/pt.svg"},{"name":"Roumanie","cca2":"ro","region":"Europe","flag":"https://flagcdn.com/ro.svg"},{"name":"Russie","cca2":"ru","region":"Europe","flag":"https://flagcdn.com/ru.svg"},{"name":"Saint-Marin","cca2":"sm","region":"Europe","flag":"https://flagcdn.com/sm.svg"},{"name":"Serbie","cca2":"rs","region":"Europe","flag":"https://flagcdn.com/rs.svg"},{"name":"Slovaquie","cca2":"sk","region":"Europe","flag":"https://flagcdn.com/sk.svg"},{"name":"Slovénie","cca2":"si","region":"Europe","flag":"https://flagcdn.com/si.svg"},{"name":"Espagne","cca2":"es","region":"Europe","flag":"https://flagcdn.com/es.svg"},{"name":"Suède","cca2":"se","region":"Europe","flag":"https://flagcdn.com/se.svg"},{"name":"Suisse","cca2":"ch","region":"Europe","flag":"https://flagcdn.com/ch.svg"},{"name":"Ukraine","cca2":"ua","region":"Europe","flag":"https://flagcdn.com/ua.svg"},{"name":"Royaume-Uni","cca2":"gb","region":"Europe","flag":"https://flagcdn.com/gb.svg"},{"name":"Vatican","cca2":"va","region":"Europe","flag":"https://flagcdn.com/va.svg"},{"name":"Afghanistan","cca2":"af","region":"Asia","flag":"https://flagcdn.com/af.svg"},{"name":"Arménie","cca2":"am","region":"Asia","flag":"https://flagcdn.com/am.svg"},{"name":"Azerbaïdjan","cca2":"az","region":"Asia","flag":"https://flagcdn.com/az.svg"},{"name":"Bahreïn","cca2":"bh","region":"Asia","flag":"https://flagcdn.com/bh.svg"},{"name":"Bangladesh","cca2":"bd","region":"Asia","flag":"https://flagcdn.com/bd.svg"},{"name":"Bhoutan","cca2":"bt","region":"Asia","flag":"https://flagcdn.com/bt.svg"},{"name":"Brunei","cca2":"bn","region":"Asia","flag":"https://flagcdn.com/bn.svg"},{"name":"Cambodge","cca2":"kh","region":"Asia","flag":"https://flagcdn.com/kh.svg"},{"name":"Chine","cca2":"cn","region":"Asia","flag":"https://flagcdn.com/cn.svg"},{"name":"Timor oriental","cca2":"tl","region":"Asia","flag":"https://flagcdn.com/tl.svg"},{"name":"Inde","cca2":"in","region":"Asia","flag":"https://flagcdn.com/in.svg"},{"name":"Indonésie","cca2":"id","region":"Asia","flag":"https://flagcdn.com/id.svg"},{"name":"Iran","cca2":"ir","region":"Asia","flag":"https://flagcdn.com/ir.svg"},{"name":"Irak","cca2":"iq","region":"Asia","flag":"https://flagcdn.com/iq.svg"},{"name":"Israël","cca2":"il","region":"Asia","flag":"https://flagcdn.com/il.svg"},{"name":"Japon","cca2":"jp","region":"Asia","flag":"https://flagcdn.com/jp.svg"},{"name":"Jordanie","cca2":"jo","region":"Asia","flag":"https://flagcdn.com/jo.svg"},{"name":"Kazakhstan","cca2":"kz","region":"Asia","flag":"https://flagcdn.com/kz.svg"},{"name":"Koweït","cca2":"kw","region":"Asia","flag":"https://flagcdn.com/kw.svg"},{"name":"Kirghizistan","cca2":"kg","region":"Asia","flag":"https://flagcdn.com/kg.svg"},{"name":"Laos","cca2":"la","region":"Asia","flag":"https://flagcdn.com/la.svg"},{"name":"Liban","cca2":"lb","region":"Asia","flag":"https://flagcdn.com/lb.svg"},{"name":"Malaisie","cca2":"my","region":"Asia","flag":"https://flagcdn.com/my.svg"},{"name":"Maldives","cca2":"mv","region":"Asia","flag":"https://flagcdn.com/mv.svg"},{"name":"Mongolie","cca2":"mn","region":"Asia","flag":"https://flagcdn.com/mn.svg"},{"name":"Myanmar","cca2":"mm","region":"Asia","flag":"https://flagcdn.com/mm.svg"},{"name":"Népal","cca2":"np","region":"Asia","flag":"https://flagcdn.com/np.svg"},{"name":"Corée du Nord","cca2":"kp","region":"Asia","flag":"https://flagcdn.com/kp.svg"},{"name":"Oman","cca2":"om","region":"Asia","flag":"https://flagcdn.com/om.svg"},{"name":"Pakistan","cca2":"pk","region":"Asia","flag":"https://flagcdn.com/pk.svg"},{"name":"Palestine","cca2":"ps","region":"Asia","flag":"https://flagcdn.com/ps.svg"},{"name":"Philippines","cca2":"ph","region":"Asia","flag":"https://flagcdn.com/ph.svg"},{"name":"Qatar","cca2":"qa","region":"Asia","flag":"https://flagcdn.com/qa.svg"},{"name":"Arabie saoudite","cca2":"sa","region":"Asia","flag":"https://flagcdn.com/sa.svg"},{"name":"Singapour","cca2":"sg","region":"Asia","flag":"https://flagcdn.com/sg.svg"},{"name":"Corée du Sud","cca2":"kr","region":"Asia","flag":"https://flagcdn.com/kr.svg"},{"name":"Sri Lanka","cca2":"lk","region":"Asia","flag":"https://flagcdn.com/lk.svg"},{"name":"Syrie","cca2":"sy","region":"Asia","flag":"https://flagcdn.com/sy.svg"},{"name":"Taïwan","cca2":"tw","region":"Asia","flag":"https://flagcdn.com/tw.svg"},{"name":"Tadjikistan","cca2":"tj","region":"Asia","flag":"https://flagcdn.com/tj.svg"},{"name":"Thaïlande","cca2":"th","region":"Asia","flag":"https://flagcdn.com/th.svg"},{"name":"Turquie","cca2":"tr","region":"Asia","flag":"https://flagcdn.com/tr.svg"},{"name":"Turkménistan","cca2":"tm","region":"Asia","flag":"https://flagcdn.com/tm.svg"},{"name":"Émirats arabes unis","cca2":"ae","region":"Asia","flag":"https://flagcdn.com/ae.svg"},{"name":"Ouzbékistan","cca2":"uz","region":"Asia","flag":"https://flagcdn.com/uz.svg"},{"name":"Vietnam","cca2":"vn","region":"Asia","flag":"https://flagcdn.com/vn.svg"},{"name":"Yémen","cca2":"ye","region":"Asia","flag":"https://flagcdn.com/ye.svg"},{"name":"Algérie","cca2":"dz","region":"Africa","flag":"https://flagcdn.com/dz.svg"},{"name":"Angola","cca2":"ao","region":"Africa","flag":"https://flagcdn.com/ao.svg"},{"name":"Bénin","cca2":"bj","region":"Africa","flag":"https://flagcdn.com/bj.svg"},{"name":"Botswana","cca2":"bw","region":"Africa","flag":"https://flagcdn.com/bw.svg"},{"name":"Burkina Faso","cca2":"bf","region":"Africa","flag":"https://flagcdn.com/bf.svg"},{"name":"Burundi","cca2":"bi","region":"Africa","flag":"https://flagcdn.com/bi.svg"},{"name":"Cameroun","cca2":"cm","region":"Africa","flag":"https://flagcdn.com/cm.svg"},{"name":"Cap-Vert","cca2":"cv","region":"Africa","flag":"https://flagcdn.com/cv.svg"},{"name":"République centrafricaine","cca2":"cf","region":"Africa","flag":"https://flagcdn.com/cf.svg"},{"name":"Tchad","cca2":"td","region":"Africa","flag":"https://flagcdn.com/td.svg"},{"name":"Comores","cca2":"km","region":"Africa","flag":"https://flagcdn.com/km.svg"},{"name":"Congo","cca2":"cg","region":"Africa","flag":"https://flagcdn.com/cg.svg"},{"name":"RD Congo","cca2":"cd","region":"Africa","flag":"https://flagcdn.com/cd.svg"},{"name":"Djibouti","cca2":"dj","region":"Africa","flag":"https://flagcdn.com/dj.svg"},{"name":"Égypte","cca2":"eg","region":"Africa","flag":"https://flagcdn.com/eg.svg"},{"name":"Guinée équatoriale","cca2":"gq","region":"Africa","flag":"https://flagcdn.com/gq.svg"},{"name":"Érythrée","cca2":"er","region":"Africa","flag":"https://flagcdn.com/er.svg"},{"name":"Eswatini","cca2":"sz","region":"Africa","flag":"https://flagcdn.com/sz.svg"},{"name":"Éthiopie","cca2":"et","region":"Africa","flag":"https://flagcdn.com/et.svg"},{"name":"Gabon","cca2":"ga","region":"Africa","flag":"https://flagcdn.com/ga.svg"},{"name":"Gambie","cca2":"gm","region":"Africa","flag":"https://flagcdn.com/gm.svg"},{"name":"Ghana","cca2":"gh","region":"Africa","flag":"https://flagcdn.com/gh.svg"},{"name":"Guinée","cca2":"gn","region":"Africa","flag":"https://flagcdn.com/gn.svg"},{"name":"Guinée-Bissau","cca2":"gw","region":"Africa","flag":"https://flagcdn.com/gw.svg"},{"name":"Côte d'Ivoire","cca2":"ci","region":"Africa","flag":"https://flagcdn.com/ci.svg"},{"name":"Kenya","cca2":"ke","region":"Africa","flag":"https://flagcdn.com/ke.svg"},{"name":"Lesotho","cca2":"ls","region":"Africa","flag":"https://flagcdn.com/ls.svg"},{"name":"Libéria","cca2":"lr","region":"Africa","flag":"https://flagcdn.com/lr.svg"},{"name":"Libye","cca2":"ly","region":"Africa","flag":"https://flagcdn.com/ly.svg"},{"name":"Madagascar","cca2":"mg","region":"Africa","flag":"https://flagcdn.com/mg.svg"},{"name":"Malawi","cca2":"mw","region":"Africa","flag":"https://flagcdn.com/mw.svg"},{"name":"Mali","cca2":"ml","region":"Africa","flag":"https://flagcdn.com/ml.svg"},{"name":"Mauritanie","cca2":"mr","region":"Africa","flag":"https://flagcdn.com/mr.svg"},{"name":"Maurice","cca2":"mu","region":"Africa","flag":"https://flagcdn.com/mu.svg"},{"name":"Maroc","cca2":"ma","region":"Africa","flag":"https://flagcdn.com/ma.svg"},{"name":"Mozambique","cca2":"mz","region":"Africa","flag":"https://flagcdn.com/mz.svg"},{"name":"Namibie","cca2":"na","region":"Africa","flag":"https://flagcdn.com/na.svg"},{"name":"Niger","cca2":"ne","region":"Africa","flag":"https://flagcdn.com/ne.svg"},{"name":"Nigeria","cca2":"ng","region":"Africa","flag":"https://flagcdn.com/ng.svg"},{"name":"Rwanda","cca2":"rw","region":"Africa","flag":"https://flagcdn.com/rw.svg"},{"name":"São Tomé-et-Príncipe","cca2":"st","region":"Africa","flag":"https://flagcdn.com/st.svg"},{"name":"Sénégal","cca2":"sn","region":"Africa","flag":"https://flagcdn.com/sn.svg"},{"name":"Seychelles","cca2":"sc","region":"Africa","flag":"https://flagcdn.com/sc.svg"},{"name":"Sierra Leone","cca2":"sl","region":"Africa","flag":"https://flagcdn.com/sl.svg"},{"name":"Somalie","cca2":"so","region":"Africa","flag":"https://flagcdn.com/so.svg"},{"name":"Afrique du Sud","cca2":"za","region":"Africa","flag":"https://flagcdn.com/za.svg"},{"name":"Soudan du Sud","cca2":"ss","region":"Africa","flag":"https://flagcdn.com/ss.svg"},{"name":"Soudan","cca2":"sd","region":"Africa","flag":"https://flagcdn.com/sd.svg"},{"name":"Tanzanie","cca2":"tz","region":"Africa","flag":"https://flagcdn.com/tz.svg"},{"name":"Togo","cca2":"tg","region":"Africa","flag":"https://flagcdn.com/tg.svg"},{"name":"Tunisie","cca2":"tn","region":"Africa","flag":"https://flagcdn.com/tn.svg"},{"name":"Ouganda","cca2":"ug","region":"Africa","flag":"https://flagcdn.com/ug.svg"},{"name":"Zambie","cca2":"zm","region":"Africa","flag":"https://flagcdn.com/zm.svg"},{"name":"Zimbabwe","cca2":"zw","region":"Africa","flag":"https://flagcdn.com/zw.svg"},{"name":"Antigua-et-Barbuda","cca2":"ag","region":"Americas","flag":"https://flagcdn.com/ag.svg"},{"name":"Argentine","cca2":"ar","region":"Americas","flag":"https://flagcdn.com/ar.svg"},{"name":"Bahamas","cca2":"bs","region":"Americas","flag":"https://flagcdn.com/bs.svg"},{"name":"Barbade","cca2":"bb","region":"Americas","flag":"https://flagcdn.com/bb.svg"},{"name":"Belize","cca2":"bz","region":"Americas","flag":"https://flagcdn.com/bz.svg"},{"name":"Bolivie","cca2":"bo","region":"Americas","flag":"https://flagcdn.com/bo.svg"},{"name":"Brésil","cca2":"br","region":"Americas","flag":"https://flagcdn.com/br.svg"},{"name":"Canada","cca2":"ca","region":"Americas","flag":"https://flagcdn.com/ca.svg"},{"name":"Chili","cca2":"cl","region":"Americas","flag":"https://flagcdn.com/cl.svg"},{"name":"Colombie","cca2":"co","region":"Americas","flag":"https://flagcdn.com/co.svg"},{"name":"Costa Rica","cca2":"cr","region":"Americas","flag":"https://flagcdn.com/cr.svg"},{"name":"Cuba","cca2":"cu","region":"Americas","flag":"https://flagcdn.com/cu.svg"},{"name":"Dominique","cca2":"dm","region":"Americas","flag":"https://flagcdn.com/dm.svg"},{"name":"République dominicaine","cca2":"do","region":"Americas","flag":"https://flagcdn.com/do.svg"},{"name":"Équateur","cca2":"ec","region":"Americas","flag":"https://flagcdn.com/ec.svg"},{"name":"El Salvador","cca2":"sv","region":"Americas","flag":"https://flagcdn.com/sv.svg"},{"name":"Grenade","cca2":"gd","region":"Americas","flag":"https://flagcdn.com/gd.svg"},{"name":"Guatemala","cca2":"gt","region":"Americas","flag":"https://flagcdn.com/gt.svg"},{"name":"Guyana","cca2":"gy","region":"Americas","flag":"https://flagcdn.com/gy.svg"},{"name":"Haïti","cca2":"ht","region":"Americas","flag":"https://flagcdn.com/ht.svg"},{"name":"Honduras","cca2":"hn","region":"Americas","flag":"https://flagcdn.com/hn.svg"},{"name":"Jamaïque","cca2":"jm","region":"Americas","flag":"https://flagcdn.com/jm.svg"},{"name":"Mexique","cca2":"mx","region":"Americas","flag":"https://flagcdn.com/mx.svg"},{"name":"Nicaragua","cca2":"ni","region":"Americas","flag":"https://flagcdn.com/ni.svg"},{"name":"Panama","cca2":"pa","region":"Americas","flag":"https://flagcdn.com/pa.svg"},{"name":"Paraguay","cca2":"py","region":"Americas","flag":"https://flagcdn.com/py.svg"},{"name":"Pérou","cca2":"pe","region":"Americas","flag":"https://flagcdn.com/pe.svg"},{"name":"Saint-Christophe-et-Niévès","cca2":"kn","region":"Americas","flag":"https://flagcdn.com/kn.svg"},{"name":"Sainte-Lucie","cca2":"lc","region":"Americas","flag":"https://flagcdn.com/lc.svg"},{"name":"Saint-Vincent-et-les-Grenadines","cca2":"vc","region":"Americas","flag":"https://flagcdn.com/vc.svg"},{"name":"Suriname","cca2":"sr","region":"Americas","flag":"https://flagcdn.com/sr.svg"},{"name":"Trinité-et-Tobago","cca2":"tt","region":"Americas","flag":"https://flagcdn.com/tt.svg"},{"name":"États-Unis","cca2":"us","region":"Americas","flag":"https://flagcdn.com/us.svg"},{"name":"Uruguay","cca2":"uy","region":"Americas","flag":"https://flagcdn.com/uy.svg"},{"name":"Venezuela","cca2":"ve","region":"Americas","flag":"https://flagcdn.com/ve.svg"}];
+
+  const REGION_MAP = {
+    'Europe':   ['Europe'],
+    'Asie':     ['Asia'],
+    'Afrique':  ['Africa'],
+    'Amérique': ['Americas'],
+  };
+
+  let activeRegions = new Set(['Europe']);
+  let current       = null;
+  let nameVisible   = false;
+
+  const flagImg     = document.getElementById('flagImg');
+  const countryName = document.getElementById('countryName');
+  const btnNew      = document.getElementById('btnNew');
+  const btnReveal   = document.getElementById('btnReveal');
+  const placeholder = document.getElementById('placeholder');
+  const loader      = document.getElementById('loader');
+  const toast       = document.getElementById('toast');
+
+  function getPool() {
+    if (!activeRegions.size) return [];
+    const allowed = [...activeRegions].flatMap(r => REGION_MAP[r]);
+    return COUNTRIES.filter(c => allowed.includes(c.region));
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('visible'), 3000);
+  }
+
+  function resetName() {
+    countryName.classList.remove('visible');
+    nameVisible = false;
+    btnReveal.textContent = 'Afficher le nom';
+    btnReveal.disabled = true;
+  }
+
+  function showNewFlag() {
+    const pool = getPool();
+    if (!pool.length) { showToast('Activez au moins un continent.'); return; }
+
+    resetName();
+    flagImg.classList.remove('visible');
+    placeholder.classList.add('hidden');
+    loader.classList.add('active');
+
+    let next;
+    do { next = pool[Math.floor(Math.random() * pool.length)]; }
+    while (pool.length > 1 && next.cca2 === current?.cca2);
+    current = next;
+
+    const tmp = new Image();
+    tmp.onload = () => {
+      flagImg.src = current.flag;
+      flagImg.alt = current.name;
+      loader.classList.remove('active');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        flagImg.classList.add('visible');
+        btnReveal.disabled = false;
+      }));
+    };
+    tmp.onerror = () => {
+      loader.classList.remove('active');
+      placeholder.classList.remove('hidden');
+      placeholder.textContent = 'Image introuvable, réessayez.';
+    };
+    tmp.src = current.flag;
+  }
+
+  function toggleName() {
+    if (!current) return;
+    if (nameVisible) {
+      countryName.classList.remove('visible');
+      btnReveal.textContent = 'Afficher le nom';
+      nameVisible = false;
+    } else {
+      countryName.textContent = current.name;
+      countryName.classList.add('visible');
+      btnReveal.textContent = 'Masquer le nom';
+      nameVisible = true;
+    }
+  }
+
+  document.querySelectorAll('.toggle-card').forEach(card => {
+    function toggle() {
+      const region = card.dataset.region;
+      const isOn = card.classList.toggle('active');
+      card.setAttribute('aria-checked', isOn);
+      card.querySelector('.pill-text').textContent = isOn ? 'on' : 'off';
+      if (isOn) activeRegions.add(region); else activeRegions.delete(region);
+      toast.classList.remove('visible');
+    }
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', e => { if (e.key===' '||e.key==='Enter'){e.preventDefault();toggle();} });
+  });
+
+  btnNew.addEventListener('click', showNewFlag);
+  btnReveal.addEventListener('click', toggleName);
+
+</script>
+
+<a href="index.html" id="btn-back">← Retour aux jeux</a>
+
+<script>
+  // Masque le bouton "Retour" si on est directement sur cette page (sans index.html)
+  // Utile si la page est hébergée seule sur GitHub Pages ou autre hébergeur.
+  (function () {
+    const btn = document.getElementById('btn-back');
+    // Si la page est la seule (pas d'historique de navigation et pas de referrer)
+    // on masque le bouton pour éviter un lien mort.
+    // Pour le réactiver ou changer la cible, modifiez href="index.html" ci-dessus.
+    if (document.referrer === '' && window.history.length <= 1) {
+      btn.style.display = 'none';
+    }
+  })();
+</script>
+
+</body>
+</html>
