@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bases de Jeux — Variante II</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:     #f0e8d5;
+  --paper:     #faf5e8;
+  --ink:       #2a1f10;
+  --ink-mid:   #5a4830;
+  --ink-dim:   #9a8060;
+  --ink-ghost: #c8a870;
+  --terra:     #b85030;
+  --terra-lt:  #d4785a;
+  --sage:      #6c9e56;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  min-height: 100vh;
+  background: var(--cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  font-family: 'Lora', Georgia, serif;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+body::after {
+  content:''; position:fixed; inset:8px;
+  border:1.5px solid rgba(184,80,48,.18);
+  border-radius:6px; pointer-events:none; z-index:900;
+}
+.corner { position:fixed; pointer-events:none; z-index:901; opacity:.22; width:50px; height:50px; }
+.corner.tl { top:10px; left:10px; }
+.corner.tr { top:10px; right:10px; transform:scaleX(-1); }
+.corner.bl { bottom:10px; left:10px; transform:scaleY(-1); }
+.corner.br { bottom:10px; right:10px; transform:scale(-1); }
+
+/* ══ TOP BAR ══ */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 64px;
+  height: 68px;
+  background: var(--cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  border-bottom: 1.5px solid var(--ink);
+}
+.top-bar-left {
+  font-size: 9px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.top-bar-count {
+  font-size: 9px;
+  letter-spacing: .2em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+}
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--cream);
+  background: var(--ink);
+  text-decoration: none;
+  padding: 8px 18px;
+  border: 1.5px solid var(--ink);
+  transition: background .2s, border-color .2s;
+}
+.btn-home:hover { background: var(--terra); border-color: var(--terra); }
+
+/* ══ HERO ASYMÉTRIQUE ══ */
+.hero {
+  padding: 72px 64px 64px;
+  border-bottom: 1.5px solid var(--ink);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 48px;
+  align-items: end;
+  position: relative;
+}
+
+/* Numéro décoratif géant en arrière-plan */
+.hero::before {
+  content: '7';
+  position: absolute;
+  right: 56px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(140px, 18vw, 240px);
+  font-weight: 900;
+  color: rgba(42,31,16,.04);
+  line-height: 1;
+  letter-spacing: -.05em;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-main { position: relative; z-index: 1; }
+
+.hero-overline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.hero-overline-line {
+  width: 48px;
+  height: 2px;
+  background: var(--terra);
+}
+.hero-overline-text {
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--terra);
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(72px, 10vw, 130px);
+  line-height: .88;
+  letter-spacing: -.03em;
+  color: var(--ink);
+}
+.hero-title .italic-line {
+  font-style: italic;
+  color: var(--terra);
+  font-weight: 700;
+}
+.hero-title .outline-line {
+  -webkit-text-stroke: 1.5px var(--ink);
+  color: transparent;
+  display: block;
+}
+
+.hero-caption {
+  margin-top: 32px;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-dim);
+  max-width: 400px;
+  line-height: 1.65;
+  position: relative;
+  z-index: 1;
+}
+
+/* ══ LISTE ÉDITORIALE ══ */
+.list-section {
+  padding: 0 64px;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px 120px;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--ink-ghost);
+  font-size: 8.5px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  align-items: center;
+}
+
+/* Chaque ligne de jeu */
+.game-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px 120px;
+  gap: 24px;
+  align-items: center;
+  border-bottom: 1.5px solid var(--ink);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background .25s ease;
+  padding: 0;
+}
+
+/* Fond image au survol */
+.game-row::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(20,12,4,.62);
+  opacity: 0;
+  transition: opacity .35s ease;
+  z-index: 0;
+}
+.game-row:hover::after { opacity: 1; }
+
+.game-row-bg {
+  position: absolute; inset: 0; z-index: -1;
+}
+.game-row-bg img {
+  width:100%; height:100%; object-fit:cover;
+  filter: sepia(.2) saturate(.5) brightness(.7);
+  opacity: 0;
+  transition: opacity .4s ease, transform .5s ease;
+  transform: scale(1.04);
+}
+.game-row:hover .game-row-bg img {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Numéro géant */
+.row-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 900;
+  color: rgba(42,31,16,.12);
+  line-height: 1;
+  letter-spacing: -.03em;
+  padding: 24px 0 24px 0;
+  transition: color .3s;
+  position: relative;
+  z-index: 1;
+}
+.game-row:hover .row-num { color: rgba(240,232,213,.12); }
+
+/* Titre + desc */
+.row-main {
+  position: relative;
+  z-index: 1;
+  padding: 24px 0;
+}
+.row-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--ink);
+  transition: color .3s;
+}
+.game-row:hover .row-title { color: var(--cream); }
+
+.row-desc {
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height .32s ease, opacity .28s ease, margin .28s ease;
+  margin-top: 0;
+}
+.game-row:hover .row-desc {
+  max-height: 50px;
+  opacity: 1;
+  color: rgba(240,232,213,.65);
+  margin-top: 8px;
+}
+
+/* Tag catégorie */
+.row-tag {
+  font-size: 9px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--terra);
+  position: relative;
+  z-index: 1;
+  transition: color .3s;
+}
+.game-row:hover .row-tag { color: var(--terra-lt); }
+
+/* Bouton */
+.row-action {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity .3s, transform .3s;
+}
+.game-row:hover .row-action {
+  opacity: 1;
+  transform: translateX(0);
+}
+.row-action-label {
+  font-size: 9px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+.row-action-arrow {
+  width: 28px;
+  height: 1px;
+  background: var(--terra);
+}
+
+/* ══ PIED DE PAGE ══ */
+.footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 64px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  color: var(--ink-ghost);
+  margin-top: 0;
+}
+.footer-orn { color:var(--terra); font-size:14px; opacity:.45; }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.game-row { animation: fadeUp .55s ease both; }
+.game-row:nth-child(2) { animation-delay: .05s; }
+.game-row:nth-child(3) { animation-delay: .10s; }
+.game-row:nth-child(4) { animation-delay: .15s; }
+.game-row:nth-child(5) { animation-delay: .20s; }
+.game-row:nth-child(6) { animation-delay: .25s; }
+.game-row:nth-child(7) { animation-delay: .30s; }
+.game-row:nth-child(8) { animation-delay: .35s; }
+
+.hero { animation: fadeUp .5s ease both; }
+
+@media (max-width: 900px) {
+  .hero { padding: 48px 32px 40px; grid-template-columns: 1fr; }
+  .hero::before { display: none; }
+  .list-section { padding: 0 24px; }
+  .list-header { grid-template-columns: 52px 1fr 100px; }
+  .list-header .list-header-action { display: none; }
+  .game-row { grid-template-columns: 52px 1fr 100px; }
+  .game-row .row-action { display: none; }
+  .top-bar { padding: 0 24px; }
+  .footer-bar { padding: 18px 24px; }
+}
+@media (max-width: 560px) {
+  .list-header { grid-template-columns: 44px 1fr; }
+  .list-header .list-header-cat,
+  .list-header .list-header-action { display: none; }
+  .game-row { grid-template-columns: 44px 1fr; }
+  .game-row .row-tag,
+  .game-row .row-action { display: none; }
+  .hero-title { font-size: clamp(54px, 14vw, 80px); }
+}
+</style>
+</head>
+<body>
+
+<svg class="corner tl" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+<svg class="corner tr" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+<svg class="corner bl" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+<svg class="corner br" viewBox="0 0 50 50" fill="none">
+  <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="5" cy="5" r="2.2" fill="#b85030"/>
+</svg>
+
+<!-- Barre haut -->
+<div class="top-bar">
+  <div class="top-bar-left">— choisissez votre jeu —</div>
+  <div class="top-bar-right">
+    <span class="top-bar-count">7 jeux disponibles</span>
+    <a class="btn-home" href="../index.html">↑ Accueil</a>
+  </div>
+</div>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-main">
+    <div class="hero-overline">
+      <div class="hero-overline-line"></div>
+      <span class="hero-overline-text">Annuaire des jeux</span>
+    </div>
+    <h1 class="hero-title">
+      Bases<br>
+      <span class="italic-line">de Jeux</span>
+    </h1>
+    <p class="hero-caption">Vocabulaire, stratégie, géographie, calcul — sept univers à explorer, chacun à portée de clic.</p>
+  </div>
+</header>
+
+<!-- Liste éditoriale -->
+<main class="list-section">
+
+  <div class="list-header">
+    <span>Nº</span>
+    <span>Titre</span>
+    <span class="list-header-cat">Catégorie</span>
+    <span class="list-header-action"></span>
+  </div>
+
+  <a class="game-row" href="le-bon-mot.html">
+    <div class="game-row-bg"><img src="image1.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">01</div>
+    <div class="row-main">
+      <div class="row-title">Le Bon Mot</div>
+      <div class="row-desc">Jeu de vocabulaire — lettres, thèmes et variantes pour toute la famille.</div>
+    </div>
+    <div class="row-tag">Vocabulaire</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+  <a class="game-row" href="lanceur-des.html">
+    <div class="game-row-bg"><img src="image2.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">02</div>
+    <div class="row-main">
+      <div class="row-title">Lanceur de Dés</div>
+      <div class="row-desc">Lancez jusqu'à 10 dés colorés, bloquez vos favoris.</div>
+    </div>
+    <div class="row-tag">Stratégie</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+  <a class="game-row" href="Les-mots.html">
+    <div class="game-row-bg"><img src="image3.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">03</div>
+    <div class="row-main">
+      <div class="row-title">Les Mots</div>
+      <div class="row-desc">Trouvez, composez et déchiffrez des mots.</div>
+    </div>
+    <div class="row-tag">Langage</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+  <a class="game-row" href="drapeaux.html">
+    <div class="game-row-bg"><img src="image4.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">04</div>
+    <div class="row-main">
+      <div class="row-title">Drapeaux</div>
+      <div class="row-desc">Reconnaissez les drapeaux du monde entier.</div>
+    </div>
+    <div class="row-tag">Géographie</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+  <a class="game-row" href="générateur-mots.html">
+    <div class="game-row-bg"><img src="image5.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">05</div>
+    <div class="row-main">
+      <div class="row-title">Générateur de Mots</div>
+      <div class="row-desc">Générez des mots aléatoires du lexique.</div>
+    </div>
+    <div class="row-tag">Créativité</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+  <a class="game-row" href="générateur-nombres.html">
+    <div class="game-row-bg"><img src="image6.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">06</div>
+    <div class="row-main">
+      <div class="row-title">Générateur de Nombres</div>
+      <div class="row-desc">Tirez des nombres au hasard selon vos règles et explorez les probabilités.</div>
+    </div>
+    <div class="row-tag">Calcul</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+  <a class="game-row" href="tableau-lettres.html">
+    <div class="game-row-bg"><img src="image7.jpg" alt="" onerror="this.style.display='none'"></div>
+    <div class="row-num">07</div>
+    <div class="row-main">
+      <div class="row-title">Tableau de Lettres</div>
+      <div class="row-desc">Formez un maximum de mots cachés dans la grille.</div>
+    </div>
+    <div class="row-tag">Grille</div>
+    <div class="row-action">
+      <span class="row-action-label">Jouer</span>
+      <div class="row-action-arrow"></div>
+    </div>
+  </a>
+
+</main>
+
+<footer class="footer-bar">
+  <span>Bases de Jeux</span>
+  <span class="footer-orn">✦</span>
+  <span>Annuaire — 7 jeux</span>
+</footer>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FLE — Annuaire</title>
+<title>Bases de Jeux — Annuaire</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -28,7 +28,7 @@ body {
   color: var(--ink);
 }
 
-/* Cadre décoratif */
+/* Cadre */
 body::after {
   content:''; position:fixed; inset:8px;
   border:1.5px solid rgba(184,80,48,.18);
@@ -42,212 +42,299 @@ body::after {
 
 /* ══ BARRE SUPÉRIEURE FIXE ══ */
 .top-bar {
-  position: sticky; top:0; z-index:100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 48px; height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 80px;
   background: var(--cream);
   border-bottom: 1.5px solid var(--ink);
 }
+
 .top-bar-title {
   font-family: 'Playfair Display', serif;
-  font-size: 18px; font-weight: 700; letter-spacing: -.01em;
-  display: flex; align-items: center; gap: 12px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.01em;
 }
-.top-bar-title .acc { color: var(--terra); font-style: italic; }
-.top-bar-title .sep { color: var(--ink-ghost); font-weight:400; font-style:italic; font-size:15px; }
-.top-bar-back {
-  text-decoration:none; color:var(--ink-dim); font-size:10px;
-  letter-spacing:.18em; text-transform:uppercase;
-  display:flex; align-items:center; gap:6px; transition:color .2s;
-  font-family:'Lora', serif;
-}
-.top-bar-back:hover { color: var(--terra); }
-.back-line { width:18px; height:1px; background:currentColor; }
+.top-bar-title .acc { color:var(--terra); font-style:italic; }
+
 .top-bar-right {
-  display:flex; align-items:center; gap:24px;
-  font-size:10.5px; letter-spacing:.18em;
-  text-transform:uppercase; color:var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
 }
 .top-bar-count {
-  padding:4px 12px;
-  border:1px solid rgba(184,80,48,.3);
-  border-radius:2px; color:var(--terra); font-size:10px;
+  padding: 4px 12px;
+  border: 1px solid rgba(184,80,48,.3);
+  border-radius: 2px;
+  color: var(--terra);
+  font-size: 10px;
 }
 
-/* ══ EN-TÊTE CATÉGORIE ══ */
-.cat-header {
-  border-bottom: 1.5px solid var(--ink);
-  padding: 40px 48px 36px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: end; gap: 24px;
-  animation: fadeUp .45s ease both;
+/* Bouton Accueil */
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Lora', serif;
+  font-size: 10px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--cream);
+  background: var(--ink);
+  text-decoration: none;
+  padding: 8px 18px;
+  border: 1.5px solid var(--ink);
+  transition: background .2s, color .2s, border-color .2s;
 }
-.cat-header-label {
-  font-size: 9px; letter-spacing: .32em; text-transform: uppercase;
-  color: var(--terra); margin-bottom: 10px;
+.btn-home:hover {
+  background: var(--terra);
+  border-color: var(--terra);
 }
-.cat-header-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(42px, 5.5vw, 76px);
-  font-weight: 900; letter-spacing: -.03em; line-height: 1;
-  color: var(--ink);
-}
-.cat-header-title em {
-  font-style: italic; font-weight: 400; color: var(--terra);
-}
-.cat-header-right {
-  text-align: right;
-}
-.cat-header-desc {
-  font-style: italic; font-size: 13px;
-  color: var(--ink-dim); line-height: 1.65;
-  max-width: 320px;
-}
-.cat-header-rule {
-  width: 32px; height: 1px; background: var(--terra);
-  margin: 16px 0 0 auto; opacity: .5;
+.btn-home svg {
+  width: 11px; height: 11px;
+  fill: none; stroke: currentColor;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 /* ══ GRILLE CATALOGUE ══ */
 .catalogue {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   border-left: 1.5px solid var(--ink);
 }
 
 /* Chaque cellule */
 .cat-item {
-  text-decoration: none; color: inherit;
+  text-decoration: none;
+  color: inherit;
   border-right: 1.5px solid var(--ink);
   border-bottom: 1.5px solid var(--ink);
-  display: flex; flex-direction: column;
-  position: relative; overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
   transition: background .2s ease;
   min-height: 260px;
 }
 
-/* Overlay sombre au survol */
+/* Survol overlay */
 .cat-item::before {
-  content:''; position:absolute; inset:0;
-  background: rgba(20,12,4,.52);
-  opacity:0; z-index:1;
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(20, 12, 4, 0.52);
+  opacity: 0;
   transition: opacity .38s cubic-bezier(.77,0,.18,1);
+  z-index: 1;
 }
-.cat-item:hover::before { opacity:1; }
+.cat-item:hover::before { opacity: 1; }
 
-/* Image de fond */
-.cat-bg { position:absolute; inset:0; z-index:0; }
+/* Image en fond */
+.cat-bg {
+  position: absolute; inset: 0;
+  z-index: 0;
+}
 .cat-bg img {
   width:100%; height:100%; object-fit:cover;
   filter: sepia(.25) saturate(.6) brightness(.75) contrast(1.05);
-  opacity:.18; transform: scale(1.04);
+  opacity: 0.18;
   transition: opacity .42s ease, transform .5s ease, filter .42s ease;
+  transform: scale(1.04);
 }
 .cat-item:hover .cat-bg img {
-  opacity:1; transform:scale(1);
+  opacity: 1;
   filter: sepia(.15) saturate(.8) brightness(.85) contrast(1.05);
+  transform: scale(1);
 }
 
 /* Numéro */
 .cat-num {
-  position:absolute; top:16px; right:18px;
-  font-family:'Playfair Display', serif;
-  font-size:11px; font-weight:400;
-  color:var(--ink-ghost); letter-spacing:.1em; z-index:3;
+  position: absolute;
+  top: 16px; right: 18px;
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-ghost);
+  letter-spacing: .1em;
+  z-index: 3;
   transition: color .3s;
 }
-.cat-item:hover .cat-num { color:rgba(240,232,213,.5); }
+.cat-item:hover .cat-num { color: rgba(240,232,213,.5); }
 
 /* Contenu */
 .cat-body {
   padding: 24px 22px 22px;
-  display: flex; flex-direction: column;
-  justify-content: flex-end; flex:1;
-  position: relative; z-index:2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1;
+  position: relative;
+  z-index: 2;
 }
+
 .cat-tag {
-  font-size:9px; letter-spacing:.22em; text-transform:uppercase;
-  color:var(--terra); margin-bottom:10px; transition:color .3s;
+  font-size: 9px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--terra);
+  margin-bottom: 10px;
+  transition: color .3s;
 }
-.cat-item:hover .cat-tag { color:var(--terra-lt); }
+.cat-item:hover .cat-tag { color: var(--terra-lt); }
+
 .cat-title {
-  font-family:'Playfair Display', serif;
+  font-family: 'Playfair Display', serif;
   font-size: clamp(17px, 1.8vw, 24px);
-  font-weight:700; line-height:1.1; letter-spacing:-.01em;
-  color:var(--ink); margin-bottom:10px; transition:color .3s;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  margin-bottom: 10px;
+  transition: color .3s;
 }
-.cat-item:hover .cat-title { color:var(--cream); }
+.cat-item:hover .cat-title { color: var(--cream); }
+
 .cat-desc {
-  font-style:italic; font-size:12px;
-  color:var(--ink-dim); line-height:1.5;
-  max-height:0; overflow:hidden; opacity:0;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  max-height: 0;
+  overflow: hidden;
   transition: max-height .35s ease, color .3s, opacity .3s;
+  opacity: 0;
 }
-.cat-item:hover .cat-desc { max-height:80px; opacity:1; color:var(--ink-ghost); }
+.cat-item:hover .cat-desc {
+  max-height: 80px;
+  opacity: 1;
+  color: var(--ink-ghost);
+}
 
 /* Flèche */
 .cat-arrow {
-  display:flex; align-items:center; gap:8px;
-  margin-top:16px; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--cream); opacity:0; transform:translateY(6px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--cream);
+  opacity: 0;
+  transform: translateY(6px);
   transition: opacity .3s .06s, transform .3s .06s;
 }
-.cat-arrow-line { width:24px; height:1px; background:var(--terra); transition:width .3s; }
+.cat-arrow-line {
+  width: 24px; height: 1px;
+  background: var(--terra);
+  transition: width .3s;
+}
 .cat-item:hover .cat-arrow { opacity:1; transform:translateY(0); }
 .cat-item:hover .cat-arrow-line { width:40px; }
 
-/* Vedette — pleine largeur */
+/* Cellule GRAND FORMAT — 2×2 */
 .cat-item.featured {
-  grid-column: span 5;
-  min-height: 320px;
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 520px;
 }
-.cat-item.featured .cat-body { padding:36px 44px 36px; }
-.cat-item.featured .cat-title { font-size:clamp(30px,4vw,52px); margin-bottom:14px; }
-.cat-item.featured .cat-desc  { font-size:14px; }
+.cat-item.featured .cat-body { padding:36px 32px 32px; }
+.cat-item.featured .cat-title { font-size:clamp(28px,3vw,44px); margin-bottom:14px; }
+.cat-item.featured .cat-desc { font-size:14px; }
+.cat-item.featured .cat-bg img { opacity:.18; }
+.cat-item.featured:hover .cat-bg img { opacity: 1; transform: scale(1); }
 
-/* Cellule large 2 colonnes */
-.cat-item.wide { grid-column: span 2; }
-/* Cellule 3 colonnes */
-.cat-item.three { grid-column: span 3; }
+/* ══ ZONE BASSE ══ */
+.bottom-banner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-left: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+}
 
-/* ══ FOOTER ══ */
+.banner-text {
+  border-right: 1.5px solid var(--ink);
+  padding: 48px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.banner-eyebrow {
+  font-size: 10px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--terra);
+  margin-bottom: 20px;
+}
+
+.banner-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 3.5vw, 52px);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -.015em;
+}
+
+.banner-sub {
+  margin-top: 20px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  font-style: italic;
+}
+
+/* Footer */
 .footer-bar {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:20px 48px;
-  border-top:1.5px solid var(--ink);
-  font-size:11px; letter-spacing:.14em; color:var(--ink-ghost);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 11px;
+  letter-spacing: .14em;
+  color: var(--ink-ghost);
 }
 .footer-orn { color:var(--terra); font-size:14px; opacity:.45; }
 
-/* Animations */
+/* Animation entrée */
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(12px); }
   to   { opacity:1; transform:translateY(0); }
 }
 .cat-item { animation:fadeUp .5s ease both; }
-.cat-item:nth-child(1){ animation-delay:.06s; }
-.cat-item:nth-child(2){ animation-delay:.12s; }
-.cat-item:nth-child(3){ animation-delay:.18s; }
-.cat-item:nth-child(4){ animation-delay:.24s; }
+.cat-item:nth-child(1) { animation-delay:.04s; }
+.cat-item:nth-child(2) { animation-delay:.08s; }
+.cat-item:nth-child(3) { animation-delay:.12s; }
+.cat-item:nth-child(4) { animation-delay:.16s; }
 
 /* Responsive */
 @media (max-width:900px) {
-  .catalogue { grid-template-columns: repeat(2,1fr); }
-  .cat-item.featured { grid-column:span 2; min-height:260px; }
-  .cat-item.wide, .cat-item.three { grid-column:span 2; }
+  .catalogue { grid-template-columns:repeat(2,1fr); }
+  .cat-item.featured { grid-column:span 2; min-height:320px; }
   .top-bar { padding:0 24px; }
-  .cat-header { padding:28px 24px 24px; grid-template-columns:1fr; }
-  .cat-header-right { text-align:left; }
+  .bottom-banner { grid-template-columns:1fr; }
+  .banner-text { border-right:none; border-bottom:1.5px solid var(--ink); }
 }
 @media (max-width:560px) {
   .catalogue { grid-template-columns:1fr; }
-  .cat-item.featured,.cat-item.wide,.cat-item.three { grid-column:span 1; }
+  .cat-item.featured { grid-column:span 1; }
 }
 </style>
 </head>
 <body>
 
+<!-- Coins décoratifs -->
 <svg class="corner tl" viewBox="0 0 50 50" fill="none">
   <path d="M5 5L5 22M5 5L22 5" stroke="#b85030" stroke-width="1.6" stroke-linecap="round"/>
   <path d="M5 5Q14 9 18 18" stroke="#b85030" stroke-width="1" stroke-linecap="round"/>
@@ -271,34 +358,16 @@ body::after {
 
 <!-- BARRE FIXE -->
 <div class="top-bar">
-  <div class="top-bar-title">
-    <a href="../index.html" class="top-bar-back">
-      <div class="back-line"></div>Accueil
-    </a>
-    <span class="sep">/</span>
-    Mes <span class="acc">&nbsp;Jeux</span>
-    <span class="sep">/</span>
-    <span style="color:var(--ink-mid)">FLE</span>
-  </div>
+  <div class="top-bar-title">Jeux <span class="acc">FLE</span></div>
   <div class="top-bar-right">
-    <span>— français langue étrangère —</span>
+    <span>— choisissez votre jeu —</span>
     <span class="top-bar-count">4 jeux</span>
-  </div>
-</div>
-
-<!-- EN-TÊTE CATÉGORIE -->
-<div class="cat-header">
-  <div>
-    <div class="cat-header-label">Sous-catégorie</div>
-    <div class="cat-header-title">F<em>LE</em></div>
-  </div>
-  <div class="cat-header-right">
-    <div class="cat-header-desc">
-      Français Langue Étrangère —<br>
-      quatre jeux pour explorer,<br>
-      apprendre et maîtriser la langue.
-    </div>
-    <div class="cat-header-rule"></div>
+    <a class="btn-home" href="../index.html" title="Retour à l'accueil">
+      <svg viewBox="0 0 16 16">
+        <path d="M2 6.5L8 2l6 4.5V14H10v-3.5H6V14H2V6.5z"/>
+      </svg>
+      Accueil
+    </a>
   </div>
 </div>
 
@@ -389,14 +458,10 @@ body::after {
     </div>
   </a>
 
+
+
 </div>
 
-<!-- FOOTER -->
-<div class="footer-bar">
-  <span>Cliquez sur un jeu pour le lancer</span>
-  <span class="footer-orn">✦</span>
-  <span>FLE — Collection 2024</span>
-</div>
 
 </body>
 </html>
