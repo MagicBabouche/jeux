@@ -122,9 +122,8 @@ h1 .lib   { color:var(--ink); }
     0 2px 16px rgba(36,26,12,.10),
     0 6px 32px rgba(36,26,12,.07),
     inset 0 0 0 5px rgba(255,255,255,.22);
-  cursor: grab;
+  cursor: default;
   overflow: hidden;
-  resize: both;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -132,7 +131,7 @@ h1 .lib   { color:var(--ink); }
   transition: box-shadow .2s, border-color .2s;
 }
 
-.frame:active { cursor: grabbing; }
+
 
 .frame.active {
   box-shadow:
@@ -158,12 +157,39 @@ h1 .lib   { color:var(--ink); }
   pointer-events: none;
 }
 
+/* Drag handle bar at top of frame */
+.frame .drag-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 28px;
+  cursor: grab;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px 10px 0 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.07), transparent);
+  transition: background .18s;
+}
+.frame .drag-bar:active { cursor: grabbing; }
+.frame .drag-bar:hover { background: linear-gradient(to bottom, rgba(0,0,0,.13), transparent); }
+.frame .drag-bar-dots {
+  display: flex; gap: 4px; opacity: .35;
+  pointer-events: none;
+}
+.frame .drag-bar-dots span {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 /* Textarea inside each frame */
 .frame textarea {
   position: absolute;
-  inset: 0;
+  left: 0; right: 0;
+  top: 28px; bottom: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 28px);
   background: transparent;
   border: none;
   outline: none;
@@ -174,7 +200,7 @@ h1 .lib   { color:var(--ink); }
   line-height: 1.15;
   text-align: center;
   padding: 16px;
-  cursor: text;
+  cursor: text !important;
   z-index: 2;
   color: inherit;
   caret-color: var(--terra);
@@ -218,20 +244,20 @@ h1 .lib   { color:var(--ink); }
 /* Resize handles — all 4 corners */
 .frame .rh {
   position: absolute;
-  width: 18px; height: 18px;
+  width: 28px; height: 28px;
   z-index: 10;
-  opacity: 0;
+  opacity: .22;
   transition: opacity .18s;
   display: flex; align-items: center; justify-content: center;
 }
-.frame:hover .rh { opacity: .55; }
+.frame:hover .rh { opacity: .7; }
 .frame .rh:hover { opacity: 1 !important; }
-.frame .rh svg { width: 9px; height: 9px; }
+.frame .rh svg { width: 13px; height: 13px; }
 
-.frame .rh-se { bottom: 2px; right: 2px; cursor: se-resize; }
-.frame .rh-sw { bottom: 2px; left:  2px; cursor: sw-resize; transform: scaleX(-1); }
-.frame .rh-ne { top:    2px; right: 2px; cursor: ne-resize; transform: scaleY(-1); }
-.frame .rh-nw { top:    2px; left:  2px; cursor: nw-resize; transform: scale(-1); }
+.frame .rh-se { bottom: 1px; right: 1px; cursor: se-resize; }
+.frame .rh-sw { bottom: 1px; left:  1px; cursor: sw-resize; transform: scaleX(-1); }
+.frame .rh-ne { top:    1px; right: 1px; cursor: ne-resize; transform: scaleY(-1); }
+.frame .rh-nw { top:    1px; left:  1px; cursor: nw-resize; transform: scale(-1); }
 
 /* Color variants for frames */
 .frame-c0 { background: var(--frame-1); color: var(--frame-1-tx); }
@@ -384,6 +410,12 @@ const btnMinus = document.getElementById('btn-minus');
 
 let frames = [];       // array of frame DOM elements
 let targetCount = 0;
+let zCounter = 10;    // global z-index counter
+
+function bringToFront(el) {
+  zCounter++;
+  el.style.zIndex = zCounter;
+}
 
 /* ─── color cycling ─── */
 const COLORS = 6;
@@ -424,6 +456,15 @@ function createFrame(index, animated = true) {
   el.style.top    = pos.y + 'px';
   el.style.width  = pos.w + 'px';
   el.style.height = pos.h + 'px';
+
+  // Drag bar
+  const dragBar = document.createElement('div');
+  dragBar.className = 'drag-bar';
+  const dots = document.createElement('div');
+  dots.className = 'drag-bar-dots';
+  dots.innerHTML = '<span></span><span></span><span></span><span></span><span></span><span></span>';
+  dragBar.appendChild(dots);
+  el.appendChild(dragBar);
 
   // Textarea
   const ta = document.createElement('textarea');
@@ -472,7 +513,10 @@ function createFrame(index, animated = true) {
     el.addEventListener('animationend', () => el.classList.remove('entering'), { once: true });
   }
 
-  makeDraggable(el, ta, handles);
+  // Click anywhere on frame → bring to front
+  el.addEventListener('mousedown', () => bringToFront(el));
+
+  makeDraggable(el, ta, handles, dragBar);
   makeResizable(el, handles);
 
   canvas.appendChild(el);
@@ -480,13 +524,17 @@ function createFrame(index, animated = true) {
 }
 
 /* ─── drag logic ─── */
-function makeDraggable(el, textarea) {
+function makeDraggable(el, textarea, handles, dragBar) {
   let dragging = false;
   let startX, startY, origLeft, origTop;
 
-  el.addEventListener('mousedown', (e) => {
-    // Don't drag if clicking textarea, close button, or resize handle
-    if (e.target === textarea || e.target.closest('.rh') || e.target.closest('.close-btn')) return;
+  function startDrag(e) {
+    // Ne pas déclencher le drag si on clique sur la textarea, les boutons ou les poignées
+    if (
+      e.target === textarea ||
+      e.target.closest('.close-btn') ||
+      e.target.closest('.rh')
+    ) return;
 
     dragging = true;
     startX = e.clientX;
@@ -497,10 +545,12 @@ function makeDraggable(el, textarea) {
     origTop  = rect.top  - cr.top;
 
     el.classList.add('active');
-    // Raise z-index
-    el.style.zIndex = 50;
-
     e.preventDefault();
+  }
+
+  dragBar.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    startDrag(e);
   });
 
   document.addEventListener('mousemove', (e) => {
@@ -518,7 +568,6 @@ function makeDraggable(el, textarea) {
     if (!dragging) return;
     dragging = false;
     el.classList.remove('active');
-    el.style.zIndex = '';
   });
 }
 
@@ -532,6 +581,7 @@ function makeResizable(el, handles) {
 
     handle.addEventListener('mousedown', (e) => {
       resizing = true;
+      bringToFront(el);
       startX    = e.clientX;
       startY    = e.clientY;
       startW    = el.offsetWidth;
